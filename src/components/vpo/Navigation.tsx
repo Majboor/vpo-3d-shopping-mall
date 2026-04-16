@@ -7,6 +7,7 @@ const Navigation = () => {
     { label: "Editorial", href: "/gallery", isRoute: true },
     { label: "Journal", href: "#journal", isRoute: false },
     { label: "Access", href: "#account", isRoute: false },
+    { label: "DSM For Businesses", href: "/VPOBusiness.html", isRoute: false, isExternal: true },
   ];
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -30,7 +31,17 @@ const Navigation = () => {
         {/* Central Menu */}
         <div className="hidden md:flex flex-1 justify-center gap-8 lg:gap-12">
           {navItems.map((item) => (
-            item.isRoute ? (
+            item.isExternal ? (
+              <a
+                key={item.label}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] uppercase tracking-[0.2em] font-medium px-3 py-1 border border-white/20 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
+              >
+                {item.label}
+              </a>
+            ) : item.isRoute ? (
               <Link
                 key={item.label}
                 to={item.href}
