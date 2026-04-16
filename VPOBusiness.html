@@ -1,0 +1,2080 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSM FOR BUSINESSES | The Spatial Commerce Platform</title>
+
+    <!-- Fonts: Full VPO editorial stack -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Instrument+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Iconify Solar -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
+
+    <!-- React / Three.js via esm.sh -->
+    <script>window.process = { env: { NODE_ENV: 'production' } };</script>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom": "https://esm.sh/react-dom@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "three": "https://esm.sh/three@0.160.0",
+            "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three",
+            "@react-three/drei": "https://esm.sh/@react-three/drei@9.96.1?external=react,react-dom,three,@react-three/fiber"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* ─── DESIGN TOKENS ─────────────────────────────────────────────────── */
+        :root {
+            --bg:            #080705;          /* warm near-black matching VPO */
+            --fg:            hsl(40,6%,92%);   /* warm near-white #ebe9e4       */
+            --muted:         rgba(235,233,228,.48);
+            --border:        rgba(255,255,255,.07);
+            --accent-blue:   rgba(120,165,220,.52);
+            --accent-warm:   rgba(210,185,130,.50);
+            --serif:         'Cormorant Garamond', Georgia, serif;
+            --sans:          'Instrument Sans', system-ui, sans-serif;
+            --mono:          'IBM Plex Mono', ui-monospace, monospace;
+            --ease:          cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* ─── BASE ───────────────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; }
+        ::-webkit-scrollbar { display: none; }
+        body {
+            margin: 0; padding: 0;
+            background: var(--bg);
+            overflow: hidden;
+            font-family: var(--sans);
+            color: var(--fg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Canvas root — sits above DSM strip & cursor glow but is transparent */
+        #root {
+            position: absolute; inset: 0;
+            width: 100vw; height: 100vh;
+            z-index: 10;
+        }
+
+        /* Editorial portal — always above canvas + grain */
+        #vpo-editorial-root {
+            position: fixed; inset: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 55;
+            overflow: hidden;
+        }
+
+        /* ─── AMBIENT CURSOR GLOW (z-9, shows through transparent canvas) ──── */
+        #cursor-glow {
+            position: fixed;
+            width: 700px; height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(120,165,220,.045) 0%, rgba(120,165,220,0) 68%);
+            pointer-events: none;
+            z-index: 9;
+            transform: translate(-50%,-50%);
+            left: 50%; top: 50%;
+            transition: left .6s cubic-bezier(.16,1,.3,1), top .6s cubic-bezier(.16,1,.3,1);
+            mix-blend-mode: screen;
+        }
+
+        /* ─── DSM TITLE STRIP — pure floating text, no box, no border ──────── */
+        #dsm-title-strip {
+            position: fixed;
+            top: 50%;
+            left: 0; right: 0;
+            transform: translateY(-50%);
+            height: clamp(80px, 12vh, 120px);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 50;
+            user-select: none;
+            /* No background, no border, no backdrop — just text */
+            background: transparent;
+        }
+        /* Edge masks so text fades in/out at viewport edges (not a hard clip) */
+        #dsm-title-strip::before,
+        #dsm-title-strip::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 10vw;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #dsm-title-strip::before {
+            left: 0;
+            background: linear-gradient(90deg, var(--bg) 0%, transparent 100%);
+        }
+        #dsm-title-strip::after {
+            right: 0;
+            background: linear-gradient(270deg, var(--bg) 0%, transparent 100%);
+        }
+        @keyframes dsm-strip-scroll {
+            /* Rightward: enters from left, exits to right */
+            from { transform: translateX(-50%); }
+            to   { transform: translateX(0%);   }
+        }
+        .dsm-strip-track {
+            display: flex;
+            align-items: center;
+            width: max-content;
+            will-change: transform;
+            animation: dsm-strip-scroll 32s linear infinite;
+            white-space: nowrap;
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 300;
+            font-size: clamp(2rem, 4.2vw, 3.8rem);
+            letter-spacing: -0.02em;
+            /* Bright, fully visible text */
+            color: rgba(235,233,228,.92);
+            line-height: 1;
+            /* Thick blurred glow around the letterforms — the "border" effect */
+            text-shadow:
+                0 0 0px   rgba(235,233,228,.90),   /* sharp inner edge */
+                0 0 18px  rgba(235,233,228,.28),   /* close soft halo  */
+                0 0 50px  rgba(235,233,228,.12),   /* wide outer bloom */
+                0 0 90px  rgba(120,165,220,.08);   /* faint blue corona */
+        }
+        .dsm-strip-item { display: inline-block; }
+        .dsm-strip-sep  {
+            display: inline-block;
+            margin: 0 3rem;
+            /* Subtle separator dot — not a rectangle, just a glyph */
+            color: rgba(120,165,220,.50);
+            font-style: normal;
+            font-size: .45em;
+            vertical-align: middle;
+            text-shadow: 0 0 12px rgba(120,165,220,.45);
+        }
+
+        /* ─── FILM GRAIN + VIGNETTE ─────────────────────────────────────────── */
+        .noise {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 12;
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E');
+            opacity: .032; mix-blend-mode: overlay;
+        }
+        .vignette {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 11;
+            background:
+                radial-gradient(1200px 800px at 50% 35%, rgba(0,0,0,0) 40%, rgba(0,0,0,.60) 100%),
+                radial-gradient(900px 700px at 15% 75%, rgba(8,7,5,0) 30%, rgba(8,7,5,.70) 100%);
+        }
+
+        /* ─── LOADER ─────────────────────────────────────────────────────────── */
+        #loader {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1.2s var(--ease);
+        }
+        .loader-inner { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+        .loader-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            color: rgba(235,233,228,.3);
+        }
+        .loader-bar {
+            width: 160px; height: 1px;
+            background: rgba(255,255,255,.08);
+            position: relative; overflow: hidden;
+        }
+        .loader-bar-fill {
+            position: absolute; top: 0; bottom: 0; left: 0;
+            background: rgba(235,233,228,.55);
+            width: 35%;
+            animation: loader-pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes loader-pulse {
+            0%,100% { transform: scaleX(.3) translateX(0); opacity: .5; }
+            50%      { transform: scaleX(1)   translateX(60%); opacity: 1; }
+        }
+
+
+        /* ─── SPLASH TEXT PANELS ─────────────────────────────────────────────── */
+        /*
+         * Single organic splash shape behind text — like a water-splash silhouette.
+         * No oval, no rectangle, no gradient blob. One irregular frosted form.
+         */
+        .cloud-haze {
+            position: relative;
+        }
+        /* The splash: one div, asymmetric border-radius, slight tilt, moderate blur */
+        .splash-bg {
+            position: absolute;
+            /* Slightly extended beyond text bounds, offset to feel organic */
+            top:    -28%;
+            bottom: -32%;
+            left:   -22%;
+            right:  -26%;
+            background: rgba(8,7,5,.52);
+            backdrop-filter: blur(10px) saturate(110%);
+            -webkit-backdrop-filter: blur(10px) saturate(110%);
+            pointer-events: none;
+            z-index: 0;
+            will-change: opacity, transform;
+            /* Shape and rotation set inline per-frame for variety */
+        }
+        /* Content always above the splash */
+        .cloud-content {
+            position: relative;
+            z-index: 3;
+            padding: 2.8rem 2.4rem;
+        }
+        .cloud-content--center { text-align: center; }
+
+        /* ─── VPO COLUMN POSITIONING ─────────────────────────────────────────── */
+        /* No overflow:hidden — cloud bleeds organically beyond column bounds    */
+        .vpo-column {
+            position: fixed; top: 0; bottom: 0;
+            width: clamp(300px,42vw,700px);
+            pointer-events: none;
+        }
+        .vpo-column--right { right: 0; }
+        .vpo-column--left  { left: 0; }
+        /* Subtle ambient image bleed (very low opacity) */
+        .vpo-blur-plate {
+            position: absolute; inset: -8%;
+            background-size: cover; background-position: center;
+            filter: blur(38px) saturate(105%);
+            transform: scale(1.06);
+            opacity: 0;
+            transition: opacity 1s var(--ease);
+        }
+        .vpo-blur-plate.is-on { opacity: .10; }
+
+        .vpo-panel-wrap {
+            position: relative; z-index: 4;
+            height: 100%;
+            display: flex; align-items: center;
+            padding: 5.5rem 1.25rem 4rem;
+            box-sizing: border-box;
+        }
+        .vpo-panel-wrap--right { justify-content: flex-end; padding-right: clamp(1.25rem,3.5vw,2.5rem); }
+        .vpo-panel-wrap--left  { justify-content: flex-start; padding-left: clamp(1.25rem,3.5vw,2.5rem); }
+
+        /* Center / finale layout */
+        .vpo-center-wrap {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 2rem; box-sizing: border-box;
+        }
+
+        /* ─── HEADLINE REVEAL ────────────────────────────────────────────────── */
+        .headline-reveal {
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 300;
+            color: var(--fg);
+            margin: 0 0 1.5rem;
+            line-height: 1.06;
+            letter-spacing: -.02em;
+        }
+
+        /* ─── FRAME PROGRESS (bottom-left) ──────────────────────────────────── */
+        #frame-progress {
+            position: fixed;
+            bottom: 32px; left: 32px;
+            z-index: 40;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #frame-counter {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: rgba(235,233,228,.3);
+        }
+        #frame-dots {
+            display: flex; gap: 6px; align-items: center;
+        }
+        .frame-dot {
+            width: 5px; height: 5px; border-radius: 999px;
+            background: rgba(235,233,228,.18);
+            transition: background .4s var(--ease), transform .4s var(--ease);
+        }
+        .frame-dot.active {
+            background: rgba(235,233,228,.80);
+            transform: scale(1.3);
+        }
+
+        /* ─── SCROLL INDICATOR (bottom-right) ───────────────────────────────── */
+        #scroll-hint {
+            position: fixed;
+            bottom: 32px; right: 32px;
+            z-index: 40; pointer-events: none;
+            display: flex; flex-direction: column;
+            align-items: flex-end; gap: 6px;
+            mix-blend-mode: difference;
+        }
+        .scroll-hint-dot {
+            width: 6px; height: 6px; border-radius: 999px;
+            background: rgba(235,233,228,.8);
+            animation: scroll-dot-pulse 2.2s ease-in-out infinite;
+        }
+        @keyframes scroll-dot-pulse {
+            0%,100% { opacity: .8; transform: scale(1); }
+            50%      { opacity: .35; transform: scale(.7); }
+        }
+        .scroll-hint-text {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 13px;
+            color: rgba(235,233,228,.55);
+        }
+
+        /* ─── BRAND CORNER ───────────────────────────────────────────────────── */
+        #brand-corner {
+            position: fixed;
+            top: 52px; left: 32px;
+            z-index: 40; pointer-events: none;
+            mix-blend-mode: difference;
+        }
+        .brand-vpo {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 26px;
+            letter-spacing: -.02em;
+            color: white;
+            line-height: 1;
+            display: block;
+        }
+        .brand-sub {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: rgba(235,233,228,.45);
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* ─── CTA BUTTON ─────────────────────────────────────────────────────── */
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 14px 32px;
+            background: var(--fg);
+            color: var(--bg);
+            border: none;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+            transition: opacity .3s var(--ease);
+        }
+        .cta-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.18) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform .6s var(--ease);
+        }
+        .cta-btn:hover { opacity: .9; }
+        .cta-btn:hover::after { transform: translateX(100%); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Film grain + vignette -->
+    <div class="noise"></div>
+    <div class="vignette"></div>
+
+    <!-- Ambient cursor glow (behind canvas, shows through transparency) -->
+    <div id="cursor-glow" aria-hidden="true"></div>
+
+    <!-- DSM FOR BUSINESSES — horizontal moving title strip (behind canvas) -->
+    <div id="dsm-title-strip" aria-hidden="true">
+        <div class="dsm-strip-track">
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <!-- Exact duplicate for seamless loop -->
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-inner">
+            <span class="loader-label">Initializing Environment</span>
+            <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+        </div>
+    </div>
+
+
+    <!-- Brand corner -->
+    <div id="brand-corner">
+        <span class="brand-vpo">VPO</span>
+        <span class="brand-sub">Studios</span>
+    </div>
+
+    <!-- Frame progress -->
+    <div id="frame-progress">
+        <span id="frame-counter">01 / 05</span>
+        <div id="frame-dots">
+            <div class="frame-dot active"></div>
+            <div class="frame-dot"></div>
+            <div class="frame-dot"></div>
+            <div class="frame-dot"></div>
+            <div class="frame-dot"></div>
+        </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="scroll-hint">
+        <div class="scroll-hint-dot"></div>
+        <span class="scroll-hint-text">Scroll to explore</span>
+    </div>
+
+    <!-- 3D canvas (transparent — DSM strip & cursor glow show through) -->
+    <div id="root"></div>
+    <!-- Editorial overlays -->
+    <div id="vpo-editorial-root" aria-live="polite"></div>
+
+    <!-- Cursor glow tracker -->
+    <script>
+        (function() {
+            var glow = document.getElementById('cursor-glow');
+            var rx = window.innerWidth / 2, ry = window.innerHeight / 2;
+            window.addEventListener('mousemove', function(e) {
+                rx += (e.clientX - rx) * 0.12;
+                ry += (e.clientY - ry) * 0.12;
+                glow.style.left = e.clientX + 'px';
+                glow.style.top  = e.clientY + 'px';
+            });
+        })();
+    </script>
+
+    <!-- Failsafe loader dismiss -->
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var loader = document.getElementById('loader');
+                if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.remove(); }, 1200); }
+            }, 9000);
+        });
+    </script>
+
+    <!-- ═══ REACT + THREE.JS APPLICATION ════════════════════════════════════ -->
+    <script type="text/babel" data-type="module">
+        import React, { useRef, useState, useEffect, Suspense } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import * as THREE from 'three';
+        import { Canvas, useFrame, useThree } from '@react-three/fiber';
+        import { ScrollControls, useScroll, Image as DreiImage, Environment, Lightformer, useProgress, Text, Float } from '@react-three/drei';
+
+        /* ── Error boundary ─────────────────────────────────────────────── */
+        class ErrorBoundary extends React.Component {
+            constructor(props) { super(props); this.state = { hasError: false }; }
+            static getDerivedStateFromError() { return { hasError: true }; }
+            componentDidCatch(e) { console.error('[VPO]', e); }
+            render() { return this.state.hasError ? (this.props.fallback ?? null) : this.props.children; }
+        }
+
+        function PlaceholderImage({ position = [0,0,0], scale = [3,4.5] }) {
+            const mesh = useRef();
+            useFrame(({ clock: { elapsedTime: t } }) => {
+                if (mesh.current) mesh.current.material.opacity = .82 + Math.sin(t * .55) * .03;
+            });
+            return (
+                <mesh ref={mesh} position={position} scale={[scale[0], scale[1], 1]}>
+                    <planeGeometry args={[1,1]} />
+                    <meshStandardMaterial transparent opacity={.85}
+                        color={new THREE.Color('#1e1c19')}
+                        roughness={.96} metalness={.04}
+                        emissive={new THREE.Color('#0a0907')} emissiveIntensity={.28}
+                    />
+                </mesh>
+            );
+        }
+
+        /* ── Story frames ───────────────────────────────────────────────── */
+        const FRAMES = [
+            {
+                id: 1,
+                title: "Beyond the Grid.",
+                subtitle: "01 / PARADIGM SHIFT",
+                copy: "Flat commerce is a compromise. VPO elevates your brand beyond static product pages into immersive, high-fidelity 3D outlet worlds. Transform the act of buying into a memorable spatial experience.",
+                align: 'right',
+                imgX: -2.2, imgY: .1, imgZ: -4,
+                scale: [3, 4.5],
+                url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 2,
+                title: "Free-Roam Discovery.",
+                subtitle: "02 / SPATIAL COMMERCE",
+                copy: "Grant your customers agency to freely navigate curated architectural environments tailored to your brand's heritage. Discovery becomes intuitive, physical, and deeply engaging.",
+                align: 'left',
+                imgX: 2.2, imgY: -.3, imgZ: -12,
+                scale: [3, 4.5],
+                url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 3,
+                title: "Shared Presence.",
+                subtitle: "03 / MULTIPLAYER SHOPPING",
+                copy: "Luxury is an experience best shared. Enable global clientele to invite friends, join exclusive private lobbies, and explore your latest collections together in real-time.",
+                align: 'right',
+                imgX: -2.0, imgY: .5, imgZ: -20,
+                scale: [3.5, 2.5],
+                url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 4,
+                title: "Digital Flagships.",
+                subtitle: "04 / BRANDED WORLDS",
+                copy: "Construct atmospheres that defy physical limitations. From gravity-defying runway spaces to serene minimalist pavilions, forge a differentiated digital presence commanding premium positioning.",
+                align: 'left',
+                imgX: 2.5, imgY: -.2, imgZ: -28,
+                scale: [3, 4.5],
+                url: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 5,
+                title: "Build the world your brand deserves.",
+                subtitle: "05 / ENTER VPO",
+                copy: "Enter the next era of luxury retail — spatial, social, and unmistakably premium. Limited partners. Curated districts. Designed for legacy brands.",
+                align: 'center',
+                finale: true,
+                imgX: 0, imgY: 0, imgZ: -34,
+                scale: [7.2, 4.6],
+                url: "https://images.unsplash.com/photo-1558442074-3c19857bc1dc?q=80&w=2000&auto=format&fit=crop"
+            }
+        ];
+
+        /* ── Scroll buffer constants ────────────────────────────────────── *
+         * BUFFER_PAGES adds extra scroll height after the last frame so it  *
+         * "locks" as a full-screen hero while the user keeps scrolling.     *
+         * Once they enter that buffer zone we auto-trigger the business      *
+         * page transition — exactly like scrolling to a new section.        */
+        const BUFFER_PAGES  = 0.8;
+        const TOTAL_PAGES   = FRAMES.length + BUFFER_PAGES;    // 5.8
+        const FINALE_OFFSET = FRAMES.length / TOTAL_PAGES;     // ≈ 0.862
+
+        /* ── Loading controller ─────────────────────────────────────────── */
+        function LoadingController() {
+            const { active, progress } = useProgress();
+            useEffect(() => {
+                if (!active && progress === 100) {
+                    const loader = document.getElementById('loader');
+                    if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 1200); }
+                }
+            }, [active, progress]);
+            return null;
+        }
+
+        /* ── Camera rig ─────────────────────────────────────────────────── */
+        function SceneRig() {
+            const { camera } = useThree();
+            const scroll = useScroll();
+            const startZ = 4;
+            const last = FRAMES[FRAMES.length - 1];
+            const endZ = last.finale ? last.imgZ + 5.4 : last.imgZ + 10;
+            useFrame((state, delta) => {
+                // Normalize offset to the content portion only.
+                // Camera freezes at the finale position while the user scrolls
+                // through the exit buffer zone — last frame stays hero-pinned.
+                const contentOff = Math.min(scroll.offset / FINALE_OFFSET, 1.0);
+                const targetZ = THREE.MathUtils.lerp(startZ, endZ, contentOff);
+                const damp = contentOff > .72 ? 3.1 : 4;
+                camera.position.z = THREE.MathUtils.damp(camera.position.z, targetZ, damp, delta);
+                camera.position.x = THREE.MathUtils.damp(camera.position.x, state.pointer.x * .38, 2, delta);
+                camera.position.y = THREE.MathUtils.damp(camera.position.y, state.pointer.y * .38, 2, delta);
+            });
+            return null;
+        }
+
+        /* ── 3D floating images ─────────────────────────────────────────── */
+        function PremiumImage({ data }) {
+            const groupRef = useRef();
+            const [urlOk, setUrlOk] = useState(null);
+            useEffect(() => {
+                setUrlOk(null);
+                let cancelled = false;
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload  = () => { if (!cancelled) setUrlOk(true);  };
+                img.onerror = () => { if (!cancelled) setUrlOk(false); };
+                img.src = data.url;
+                return () => { cancelled = true; img.onload = null; img.onerror = null; };
+            }, [data.url]);
+            useFrame(({ clock: { elapsedTime: t } }) => {
+                if (!groupRef.current) return;
+                const fin = !!data.finale;
+                groupRef.current.position.y = data.imgY + Math.sin(t * .5 + data.id) * (fin ? .04 : .14);
+                groupRef.current.rotation.y = Math.sin(t * .28) * (fin ? .005 : .018);
+            });
+            return (
+                <group ref={groupRef} position={[data.imgX, data.imgY, data.imgZ]}>
+                    {(urlOk === false || urlOk === null) && (
+                        <PlaceholderImage position={[0,0,0]} scale={data.scale} />
+                    )}
+                    {urlOk === true && (
+                        <ErrorBoundary fallback={<PlaceholderImage position={[0,0,0]} scale={data.scale} />}>
+                            <DreiImage
+                                url={data.url}
+                                position={[0,0,0]}
+                                scale={data.scale}
+                                toneMapped={true}
+                                transparent
+                                opacity={data.finale ? 1 : .88}
+                            />
+                        </ErrorBoundary>
+                    )}
+                </group>
+            );
+        }
+
+        /* ── Hero 3D title removed — CSS strip at z-50 handles the title ── */
+
+        /* ── DSM strip: fade out strip as scroll begins, slightly speed up ─ */
+        function DSMStripCoupler() {
+            const scroll = useScroll();
+            useFrame(() => {
+                const strip = document.getElementById('dsm-title-strip');
+                const track = document.querySelector('.dsm-strip-track');
+                if (!strip || !track) return;
+
+                const off = scroll.offset;
+
+                // Fade the entire strip band out once the user scrolls
+                // Starts fading at offset 0.04, fully gone by 0.18
+                const stripOpacity = Math.max(0, 1 - off * 7);
+                strip.style.opacity = String(stripOpacity);
+
+                // Slightly speed up with scroll momentum (max at first frame)
+                const sec = Math.max(18, 32 - off * 12);
+                track.style.animationDuration = `${sec}s`;
+            });
+            return null;
+        }
+
+        /* ── Word-by-word body text reveal ─────────────────────────────── */
+        function ComposedBody({ text, progress = 0, style = {} }) {
+            const words = String(text || '').split(' ');
+            const n = Math.max(1, words.length);
+            return (
+                <p style={{
+                    margin: 0,
+                    fontFamily: 'var(--sans)',
+                    fontSize: '14px',
+                    fontWeight: 300,
+                    lineHeight: 1.72,
+                    color: 'rgba(235,233,228,.78)',
+                    ...style
+                }}>
+                    {words.map((w, i) => {
+                        const t = i / n;
+                        const o = THREE.MathUtils.clamp((progress - t) * 5.5, 0, 1);
+                        return (
+                            <span key={`${w}-${i}`} style={{
+                                display: 'inline-block',
+                                opacity: o,
+                                transform: `translateY(${(1 - o) * 6}px)`,
+                                transition: 'opacity 60ms linear, transform 60ms linear',
+                                marginRight: i === n - 1 ? 0 : '.3em',
+                            }}>
+                                {w}
+                            </span>
+                        );
+                    })}
+                </p>
+            );
+        }
+
+        /* ── Headline mask reveal ────────────────────────────────────────── */
+        function HeadlineReveal({ text, reveal, sizeClass = 'text-4xl md:text-5xl' }) {
+            const clip = `inset(0 ${(1 - reveal) * 100}% 0 0)`;
+            return (
+                <h2 className={`headline-reveal ${sizeClass}`} style={{ clipPath: clip, WebkitClipPath: clip }}>
+                    {text}
+                </h2>
+            );
+        }
+
+        /* ── Splash text panel ───────────────────────────────────────────────── */
+        /*
+         * Each frame gets a unique water-splash silhouette behind its text.
+         * border-radius shorthand: top-left top-right bottom-right bottom-left
+         *   / top-left top-right bottom-right bottom-left (vertical radii)
+         * Slight per-frame rotation makes each one feel distinct and organic.
+         */
+        const SPLASH_SHAPES = [
+            // Frame 1 — right-aligned copy, splash leans left-heavy
+            { borderRadius: '62% 38% 44% 56% / 34% 58% 42% 66%', transform: 'rotate(-6deg) skewX(3deg)',  top: '-30%', bottom: '-34%', left: '-24%', right: '-20%' },
+            // Frame 2 — left-aligned copy, splash leans right
+            { borderRadius: '38% 62% 56% 44% / 66% 34% 62% 38%', transform: 'rotate(5deg)  skewX(-4deg)', top: '-26%', bottom: '-32%', left: '-18%', right: '-28%' },
+            // Frame 3 — right-aligned
+            { borderRadius: '55% 45% 38% 62% / 42% 60% 40% 58%', transform: 'rotate(-4deg) skewY(2deg)',  top: '-32%', bottom: '-28%', left: '-22%', right: '-18%' },
+            // Frame 4 — left-aligned
+            { borderRadius: '44% 56% 62% 38% / 58% 40% 56% 44%', transform: 'rotate(6deg)  skewX(3deg)',  top: '-28%', bottom: '-36%', left: '-20%', right: '-24%' },
+            // Frame 5 — center finale, wider and flatter splash
+            { borderRadius: '50% 50% 44% 56% / 38% 50% 52% 42%', transform: 'rotate(-2deg) skewX(1deg)',  top: '-24%', bottom: '-28%', left: '-16%', right: '-18%' },
+        ];
+
+        function TextPanelInner({ frame, alpha, reveal, reveal2, ctaReveal }) {
+            const y = (1 - alpha) * 16;
+            const isCenter = frame.align === 'center';
+            const isFinale = !!frame.finale;
+            const splash = SPLASH_SHAPES[(frame.id - 1) % SPLASH_SHAPES.length];
+
+            const sizeClass = isFinale
+                ? 'text-4xl md:text-5xl lg:text-6xl'
+                : 'text-4xl md:text-5xl';
+
+            return (
+                <div
+                    className="cloud-haze"
+                    style={{
+                        transform: `translateY(${y}px)`,
+                        maxWidth: isFinale ? '44rem' : '36rem',
+                        width: '100%',
+                    }}
+                >
+                    {/* Single water-splash shape — no oval, no rectangle */}
+                    <div
+                        className="splash-bg"
+                        aria-hidden="true"
+                        style={{
+                            opacity: alpha,
+                            borderRadius: splash.borderRadius,
+                            transform: splash.transform,
+                            top: splash.top,
+                            bottom: splash.bottom,
+                            left: splash.left,
+                            right: splash.right,
+                        }}
+                    />
+
+                    {/* Text content */}
+                    <div className={`cloud-content${isCenter ? ' cloud-content--center' : ''}`}>
+
+                        {/* Kicker */}
+                        <span style={{
+                            display: 'block',
+                            fontFamily: 'var(--mono)',
+                            fontSize: '9px',
+                            letterSpacing: '.28em',
+                            textTransform: 'uppercase',
+                            marginBottom: '1.4rem',
+                            color: 'rgba(120,165,220,.85)',
+                            opacity: THREE.MathUtils.clamp((reveal - .04) * 7, 0, 1),
+                        }}>
+                            {frame.subtitle}
+                        </span>
+
+                        {/* Headline */}
+                        <HeadlineReveal text={frame.title} reveal={reveal} sizeClass={sizeClass} />
+
+                        {/* Body copy */}
+                        <ComposedBody text={frame.copy} progress={reveal2} />
+
+                        {/* CTA — finale only */}
+                        {isCenter && (
+                            <div style={{ opacity: ctaReveal, marginTop: '2.5rem', display: 'flex', justifyContent: 'center' }}>
+                                <button
+                                    type="button"
+                                    className="cta-btn"
+                                    onClick={() => window.dispatchEvent(new CustomEvent('vpo:enter-business'))}
+                                >
+                                    Explore Partner Program
+                                    <iconify-icon icon="solar:arrow-down-linear" stroke-width="1.5" style={{ fontSize: '14px' }}></iconify-icon>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        /* ── Scroll timeline publisher ───────────────────────────────────── */
+        function ScrollTimelinePub() {
+            const scroll = useScroll();
+            // One-shot ref: prevents firing vpo:enter-business every frame
+            const triggered = useRef(false);
+            useFrame(() => {
+                const total  = FRAMES.length;
+                const rawOff = THREE.MathUtils.clamp(scroll.offset, 0, 1);
+                // Normalize to content portion so frame timing is identical to before
+                const off = Math.min(rawOff / FINALE_OFFSET, 1.0);
+                const t = off * total;
+                const idx = Math.max(0, Math.min(total - 1, Math.floor(t)));
+                const local = t - idx;
+                const isFinale = !!(FRAMES[idx] && FRAMES[idx].finale);
+
+                const fadeIn  = THREE.MathUtils.smoothstep(local, .06, .26);
+                const fadeOut = isFinale
+                    ? 1 - THREE.MathUtils.smoothstep(local, .90, .998)
+                    : 1 - THREE.MathUtils.smoothstep(local, .74, .94);
+                const alpha = Math.max(0, Math.min(1, fadeIn * fadeOut));
+
+                const reveal  = THREE.MathUtils.clamp((local - (isFinale ? .08 : .10)) / (isFinale ? .42 : .48), 0, 1);
+                const reveal2 = THREE.MathUtils.clamp((local - (isFinale ? .16 : .20)) / (isFinale ? .48 : .52), 0, 1);
+                const ctaReveal = THREE.MathUtils.clamp((local - (isFinale ? .36 : .42)) / (isFinale ? .38 : .34), 0, 1);
+
+                // Update frame progress DOM
+                const counter = document.getElementById('frame-counter');
+                if (counter) counter.textContent = `0${idx + 1} / 0${total}`;
+                const dots = document.querySelectorAll('.frame-dot');
+                dots.forEach((d, i) => {
+                    d.classList.toggle('active', i === idx);
+                });
+
+                // Scroll hint fades when scrolling begins
+                const hint = document.getElementById('scroll-hint');
+                if (hint) hint.style.opacity = String(Math.max(0, 1 - off * 12));
+
+                const el = document.getElementById('vpo-editorial-root');
+                if (el) {
+                    el.style.setProperty('--vpo-scroll', String(off));
+                    el.dataset.frameIndex = String(idx);
+                }
+
+                window.dispatchEvent(new CustomEvent('vpo:tick', {
+                    detail: { offset: off, idx, local, total, alpha, reveal, reveal2, ctaReveal }
+                }));
+
+                // ── Auto-transition into business page ───────────────────────
+                // When the user scrolls past the content zone into the buffer,
+                // fire the business page slide-in (like scrolling to a new section).
+                // Reset the trigger if they scroll back into the content zone.
+                if (rawOff > FINALE_OFFSET + 0.06 && !triggered.current) {
+                    triggered.current = true;
+                    window.dispatchEvent(new CustomEvent('vpo:enter-business'));
+                }
+                if (rawOff < FINALE_OFFSET - 0.02 && triggered.current) {
+                    triggered.current = false; // allow re-trigger if user scrolls back
+                }
+            });
+            return null;
+        }
+
+        /* ── Editorial sheet (mounted in #vpo-editorial-root) ────────────── */
+        function EditorialSheet({ tick }) {
+            const frame = FRAMES[tick.idx];
+            if (!frame) return null;
+            const { alpha, reveal, reveal2, ctaReveal } = tick;
+
+            return (
+                <>
+                    {/* Left / right panels */}
+                    {frame.align !== 'center' && (
+                        <div
+                            className={`vpo-column vpo-column--${frame.align}`}
+                            style={{ opacity: alpha }}
+                        >
+                            {/* Very subtle ambient image bleed */}
+                            <div
+                                className={`vpo-blur-plate${alpha > .06 ? ' is-on' : ''}`}
+                                style={{ backgroundImage: `url(${frame.url})` }}
+                                aria-hidden="true"
+                            />
+                            <div className={`vpo-panel-wrap vpo-panel-wrap--${frame.align}`}>
+                                <TextPanelInner
+                                    frame={frame}
+                                    alpha={alpha}
+                                    reveal={reveal}
+                                    reveal2={reveal2}
+                                    ctaReveal={ctaReveal}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Center / finale panel */}
+                    {frame.align === 'center' && (
+                        <div className="vpo-center-wrap" style={{ opacity: alpha }}>
+                            <TextPanelInner
+                                frame={frame}
+                                alpha={alpha}
+                                reveal={reveal}
+                                reveal2={reveal2}
+                                ctaReveal={ctaReveal}
+                            />
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function EditorialApp() {
+            const [tick, setTick] = useState({ offset:0, idx:0, local:0, total:FRAMES.length, alpha:0, reveal:0, reveal2:0, ctaReveal:0 });
+            useEffect(() => {
+                const onTick = (e) => setTick(e.detail);
+                window.addEventListener('vpo:tick', onTick);
+                return () => window.removeEventListener('vpo:tick', onTick);
+            }, []);
+            return <EditorialSheet tick={tick} />;
+        }
+
+        /* ── Main canvas app ─────────────────────────────────────────────── */
+        function App() {
+            return (
+                <Canvas
+                    gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping }}
+                    onCreated={({ gl }) => {
+                        /* Transparent clear — DSM strip (z-5) and cursor glow (z-9) show through */
+                        gl.setClearColor(0x080705, 0);
+                    }}
+                    camera={{ position: [0, 0, 4], fov: 45 }}
+                    dpr={[1, 2]}
+                >
+                    <LoadingController />
+                    {/* Fog uses warm bg color to fade depth correctly */}
+                    <fog attach="fog" args={['#080705', 5, 24]} />
+
+                    <ambientLight intensity={.38} />
+                    <directionalLight position={[5, 5, 5]} intensity={.95} color="#ffffff" />
+
+                    <Environment resolution={128}>
+                        <group rotation={[-Math.PI / 2, 0, 0]}>
+                            <Lightformer intensity={.45} form="rect" position={[0, 5, -5]} scale={[10, 10, 1]} target={[0, 0, 0]} color="#ffffff" />
+                        </group>
+                    </Environment>
+
+                    <Suspense fallback={null}>
+                        <ScrollControls pages={TOTAL_PAGES} damping={.14} distance={1.25}>
+                            <SceneRig />
+                            <DSMStripCoupler />
+                            <ScrollTimelinePub />
+                            <group>
+                                {FRAMES.map((frame) => (
+                                    <PremiumImage key={frame.id} data={frame} />
+                                ))}
+                            </group>
+                        </ScrollControls>
+                    </Suspense>
+                </Canvas>
+            );
+        }
+
+        /* Mount editorial layer */
+        const editorialEl = document.getElementById('vpo-editorial-root');
+        if (editorialEl) {
+            try { createRoot(editorialEl).render(<EditorialApp />); }
+            catch(e) { console.error('[VPO] editorial mount error:', e); }
+        }
+
+        /* Mount 3D canvas */
+        const rootEl = document.getElementById('root');
+        if (rootEl) {
+            try {
+                createRoot(rootEl).render(<App />);
+                window.__VPO_MOUNTED = true;
+            } catch(e) { console.error('[VPO] canvas mount error:', e); }
+        }
+    </script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     BUSINESS PAGE — slides over the 3D experience on "Explore" click
+═══════════════════════════════════════════════════════════════════════════ -->
+<style id="bp-styles">
+/* ── Page shell ──────────────────────────────────────────────────────── */
+#business-page {
+    position: fixed; inset: 0;
+    overflow-y: scroll;            /* 'scroll' not 'auto' — always shows scrollbar track */
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;  /* stop scroll chaining to anything beneath */
+    background: #080705;
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(32px);
+    transition: opacity 1s cubic-bezier(.16,1,.3,1), transform 1s cubic-bezier(.16,1,.3,1);
+    visibility: hidden;            /* hidden keeps it out of tab order when invisible */
+}
+#business-page.bp-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    visibility: visible;
+}
+/* Ensure the bp scrollbar stays invisible (matches app aesthetic) */
+#business-page::-webkit-scrollbar { display: none; }
+#business-page { scrollbar-width: none; }
+
+/* Shared section padding */
+.bp-section { padding: 120px 0; position: relative; }
+.bp-container { width: min(1400px, 100%); margin: 0 auto; padding: 0 40px; }
+.bp-kicker {
+    font-family: var(--mono);
+    font-size: 10px; letter-spacing: .28em; text-transform: uppercase;
+    color: rgba(235,233,228,.35); display: block; margin-bottom: 20px;
+}
+.bp-h2 {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: clamp(2.8rem,5vw,5rem); letter-spacing: -.025em; line-height: 1.05;
+    color: var(--fg); margin: 0 0 24px;
+}
+.bp-lead {
+    font-family: var(--sans); font-size: 16px; font-weight: 300; line-height: 1.75;
+    color: rgba(235,233,228,.55); max-width: 56ch;
+}
+.bp-rule { width: 1px; height: 60px; background: rgba(255,255,255,.1); margin: 40px 0; }
+.bp-divider { border: none; border-top: 1px solid rgba(255,255,255,.07); margin: 0; }
+
+/* Subtle animated dot-grid background for sections */
+.bp-dotgrid::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image: radial-gradient(rgba(235,233,228,.04) 1px, transparent 1px);
+    background-size: 36px 36px;
+}
+
+/* ── §1 INTRO HERO ───────────────────────────────────────────────────── */
+#bp-intro {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(120,165,220,.06) 0%, transparent 70%);
+    position: relative; overflow: hidden;
+}
+#bp-intro::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(235,233,228,.035) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+.bp-intro-inner { position: relative; z-index: 1; padding: 160px 40px 100px; }
+.bp-intro-headline {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: clamp(3.5rem,8vw,8rem); letter-spacing: -.04em; line-height: 1.02;
+    color: var(--fg); margin: 0 0 32px;
+}
+.bp-intro-sub {
+    font-family: var(--sans); font-size: 15px; font-weight: 300; line-height: 1.8;
+    color: rgba(235,233,228,.5); max-width: 52ch; margin: 0 auto 48px;
+}
+.bp-back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(235,233,228,.35); background: none; border: none; cursor: pointer;
+    transition: color .3s var(--ease);
+    padding: 0; margin-bottom: 80px;
+}
+.bp-back-btn:hover { color: rgba(235,233,228,.7); }
+/* Two path teasers below headline */
+.bp-paths { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+.bp-path {
+    padding: 14px 28px;
+    border: 1px solid rgba(255,255,255,.1);
+    font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+    color: rgba(235,233,228,.55);
+    cursor: pointer;
+    transition: border-color .3s var(--ease), color .3s var(--ease), background .3s var(--ease);
+    background: rgba(255,255,255,.02);
+}
+.bp-path:hover { border-color: rgba(255,255,255,.3); color: var(--fg); background: rgba(255,255,255,.05); }
+.bp-path.gold { border-color: rgba(195,155,75,.4); color: rgba(215,175,100,.8); }
+.bp-path.gold:hover { border-color: rgba(215,175,100,.7); background: rgba(195,155,75,.06); }
+.bp-path.plat { border-color: rgba(180,190,210,.4); color: rgba(200,210,225,.8); }
+.bp-path.plat:hover { border-color: rgba(200,210,225,.7); background: rgba(180,190,210,.06); }
+
+/* ── §2 HOW IT WORKS ─────────────────────────────────────────────────── */
+#bp-process { background: #060504; }
+.bp-steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-top: 64px; position: relative; }
+@media (max-width: 800px) { .bp-steps { grid-template-columns: 1fr; } }
+/* Animated connecting line */
+.bp-steps::before {
+    content: '';
+    position: absolute; top: 52px; left: 16.5%; right: 16.5%; height: 1px;
+    background: linear-gradient(90deg,
+        rgba(120,165,220,.5) 0%,
+        rgba(120,165,220,.5) var(--line-fill, 0%),
+        rgba(255,255,255,.08) var(--line-fill, 0%),
+        rgba(255,255,255,.08) 100%
+    );
+    transition: --line-fill .8s ease;
+}
+.bp-step { padding: 0 32px 48px; text-align: center; }
+.bp-step-num {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1px solid rgba(120,165,220,.35);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .15em;
+    color: rgba(120,165,220,.8);
+    position: relative; z-index: 1;
+    background: #060504;
+    transition: border-color .4s, box-shadow .4s;
+}
+.bp-step.step-active .bp-step-num {
+    border-color: rgba(120,165,220,.8);
+    box-shadow: 0 0 24px rgba(120,165,220,.2);
+}
+.bp-step-title {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 1.7rem; letter-spacing: -.015em; color: var(--fg);
+    margin: 0 0 12px;
+}
+.bp-step-desc {
+    font-family: var(--sans); font-size: 13px; font-weight: 300; line-height: 1.7;
+    color: rgba(235,233,228,.45);
+}
+
+/* ── §3 TIERS ────────────────────────────────────────────────────────── */
+#bp-tiers { background: #080705; }
+.bp-tier-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    margin-top: 64px;
+}
+@media (max-width: 800px) { .bp-tier-grid { grid-template-columns: 1fr; } }
+.bp-tier-card {
+    position: relative; padding: 48px 40px; overflow: hidden;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.02);
+    transition: transform .5s var(--ease), box-shadow .5s var(--ease);
+    cursor: default;
+}
+.bp-tier-card:hover { transform: translateY(-4px); }
+/* Tier-specific accent glows */
+.bp-tier-card.gold {
+    border-color: rgba(195,155,75,.2);
+}
+.bp-tier-card.gold::before {
+    content: '';
+    position: absolute; inset: -1px;
+    background: linear-gradient(135deg, rgba(195,155,75,.12) 0%, transparent 55%);
+    pointer-events: none;
+}
+.bp-tier-card.gold:hover { box-shadow: 0 24px 80px rgba(195,155,75,.10); }
+.bp-tier-card.plat { border-color: rgba(180,190,210,.25); }
+.bp-tier-card.plat::before {
+    content: '';
+    position: absolute; inset: -1px;
+    background: linear-gradient(135deg, rgba(180,190,210,.16) 0%, transparent 55%);
+    pointer-events: none;
+}
+.bp-tier-card.plat:hover { box-shadow: 0 24px 80px rgba(180,190,210,.12); }
+/* FEATURED badge */
+.bp-featured-badge {
+    position: absolute; top: 20px; right: 20px;
+    font-family: var(--mono); font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+    padding: 5px 10px;
+    background: rgba(180,190,210,.12); border: 1px solid rgba(180,190,210,.25);
+    color: rgba(200,210,225,.8);
+}
+.bp-tier-icon {
+    width: 42px; height: 42px; margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: center;
+}
+.tier-gem {
+    width: 28px; height: 28px;
+    transform: rotate(45deg);
+}
+.tier-gem.gold-gem { background: linear-gradient(135deg,#c9a84c,#e6c96f,#a87a2a); }
+.tier-gem.plat-gem {
+    background: linear-gradient(135deg,#b0bcd0,#dde5f0,#8a98b0);
+    box-shadow: 0 0 20px rgba(180,200,230,.25);
+}
+.bp-tier-name {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .28em; text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.bp-tier-name.gold { color: rgba(210,175,90,.85); }
+.bp-tier-name.plat { color: rgba(190,205,225,.85); }
+.bp-tier-headline {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 2.2rem; letter-spacing: -.02em; color: var(--fg);
+    margin: 0 0 8px;
+}
+.bp-tier-tagline {
+    font-family: var(--sans); font-size: 13px; font-weight: 300;
+    color: rgba(235,233,228,.4); margin-bottom: 32px;
+}
+.bp-tier-price {
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.bp-price-amount {
+    font-family: var(--serif); font-weight: 300;
+    font-size: 3.2rem; letter-spacing: -.03em; color: var(--fg);
+    line-height: 1;
+}
+.bp-price-period {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em;
+    color: rgba(235,233,228,.3);
+    display: block; margin-top: 4px;
+}
+.bp-price-note {
+    font-family: var(--sans); font-size: 11px;
+    color: rgba(235,233,228,.25); margin-top: 6px; display: block;
+}
+.bp-tier-features { list-style: none; padding: 0; margin: 0 0 36px; display: grid; gap: 12px; }
+.bp-tier-features li {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-family: var(--sans); font-size: 13px; font-weight: 300;
+    color: rgba(235,233,228,.7); line-height: 1.5;
+}
+.bp-feat-dot {
+    width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 6px;
+}
+.gold .bp-feat-dot { background: rgba(210,175,90,.7); }
+.plat .bp-feat-dot { background: rgba(190,205,225,.7); }
+.bp-tier-cta {
+    width: 100%; padding: 14px; border: none; cursor: pointer;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+    transition: opacity .3s var(--ease), background .3s var(--ease);
+    position: relative; overflow: hidden;
+}
+.bp-tier-cta::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+    transform: translateX(-100%); transition: transform .5s var(--ease);
+}
+.bp-tier-cta:hover::after { transform: translateX(100%); }
+.gold .bp-tier-cta {
+    background: rgba(195,155,75,.12); color: rgba(215,180,100,.9);
+    border: 1px solid rgba(195,155,75,.35);
+}
+.gold .bp-tier-cta:hover { background: rgba(195,155,75,.2); }
+.plat .bp-tier-cta {
+    background: rgba(235,233,228,.9); color: #080705;
+}
+.plat .bp-tier-cta:hover { opacity: .88; }
+
+/* ── §4 FEATURE MATRIX ───────────────────────────────────────────────── */
+#bp-features { background: #060504; }
+.bp-feat-table { width: 100%; margin-top: 64px; border-collapse: collapse; }
+.bp-feat-cat {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .28em; text-transform: uppercase;
+    color: rgba(235,233,228,.28);
+    padding: 24px 0 12px; text-align: left;
+}
+.bp-feat-row {
+    border-top: 1px solid rgba(255,255,255,.05);
+    transition: background .25s;
+}
+.bp-feat-row:hover { background: rgba(255,255,255,.02); }
+.bp-feat-name {
+    font-family: var(--sans); font-size: 13px; font-weight: 300;
+    color: rgba(235,233,228,.65);
+    padding: 16px 0; width: 55%;
+}
+.bp-feat-check {
+    text-align: center; padding: 16px 0; width: 22.5%;
+    font-size: 14px;
+}
+.bp-feat-check.has-gold::after {
+    content: '✦';
+    color: rgba(210,175,90,.8);
+    font-size: 11px;
+}
+.bp-feat-check.has-plat::after {
+    content: '✦';
+    color: rgba(190,205,225,.85);
+    font-size: 11px;
+}
+.bp-feat-check.no-feat::after {
+    content: '—';
+    color: rgba(255,255,255,.12);
+    font-size: 11px;
+}
+.bp-table-head th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase;
+    padding: 0 0 24px; text-align: center;
+}
+.bp-table-head th:first-child { text-align: left; color: rgba(235,233,228,.25); }
+.bp-table-head .th-gold { color: rgba(210,175,90,.75); }
+.bp-table-head .th-plat { color: rgba(190,205,225,.75); }
+
+/* ── §5 OUTCOMES ─────────────────────────────────────────────────────── */
+#bp-outcomes {
+    background: #050403;
+    border-top: 1px solid rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.bp-outcomes-intro { max-width: 44ch; margin-bottom: 72px; }
+.bp-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,.06);
+}
+@media (max-width: 900px) { .bp-metrics-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 540px) { .bp-metrics-grid { grid-template-columns: 1fr; } }
+.bp-metric {
+    background: #050403;
+    padding: 48px 36px;
+    position: relative; overflow: hidden;
+    transition: background .4s var(--ease);
+}
+.bp-metric:hover { background: #070605; }
+.bp-metric-bar {
+    position: absolute; bottom: 0; left: 0;
+    height: 2px; width: 0%;
+    background: linear-gradient(90deg, rgba(120,165,220,.7), rgba(120,165,220,0));
+    transition: width 1.4s cubic-bezier(.16,1,.3,1);
+}
+.bp-metric.counted .bp-metric-bar { width: 100%; }
+.bp-metric-value {
+    font-family: var(--serif); font-weight: 300; font-style: italic;
+    font-size: clamp(2.8rem,4.5vw,4.5rem);
+    letter-spacing: -.03em; line-height: 1;
+    color: var(--fg);
+    margin-bottom: 10px;
+}
+.bp-metric-label {
+    font-family: var(--sans); font-size: 12px; font-weight: 300;
+    color: rgba(235,233,228,.4); line-height: 1.5;
+}
+.bp-metric-icon {
+    position: absolute; top: 20px; right: 20px;
+    font-size: 18px; opacity: .15;
+}
+
+/* Customer journey flow */
+.bp-journey { margin-top: 80px; position: relative; }
+.bp-journey-line {
+    position: absolute; top: 24px; left: 0; right: 0; height: 1px;
+    background: rgba(255,255,255,.06);
+    overflow: hidden;
+}
+.bp-journey-line-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, rgba(120,165,220,.6), rgba(120,165,220,.1));
+    transition: width 2s cubic-bezier(.16,1,.3,1);
+}
+.journey-active .bp-journey-line-fill { width: 100%; }
+.bp-journey-nodes {
+    display: flex; justify-content: space-between; position: relative;
+}
+.bp-journey-node { text-align: center; flex: 1; }
+.bp-journey-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    border: 1px solid rgba(120,165,220,.4);
+    background: #050403;
+    margin: 19px auto 16px;
+    transition: border-color .5s, box-shadow .5s;
+    position: relative; z-index: 1;
+}
+.journey-active .bp-journey-dot {
+    border-color: rgba(120,165,220,.9);
+    box-shadow: 0 0 14px rgba(120,165,220,.35);
+}
+.bp-journey-label {
+    font-family: var(--mono); font-size: 8px; letter-spacing: .2em; text-transform: uppercase;
+    color: rgba(235,233,228,.3);
+}
+.bp-journey-val {
+    font-family: var(--serif); font-style: italic; font-size: 1.1rem;
+    color: var(--fg); margin-top: 4px;
+}
+
+/* ── §6 COMING SOON ──────────────────────────────────────────────────── */
+#bp-future {
+    background: #080705;
+    border-top: 1px solid rgba(255,255,255,.05);
+}
+.bp-future-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 16px;
+    margin-top: 64px;
+}
+@media (max-width: 900px) { .bp-future-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 560px) { .bp-future-grid { grid-template-columns: 1fr; } }
+.bp-future-card {
+    padding: 32px 28px;
+    border: 1px solid rgba(255,255,255,.06);
+    background: rgba(255,255,255,.01);
+    position: relative; overflow: hidden;
+    transition: border-color .4s, background .4s;
+}
+.bp-future-card:hover { border-color: rgba(255,255,255,.13); background: rgba(255,255,255,.03); }
+/* Holographic shimmer overlay */
+.bp-future-card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg,
+        rgba(120,165,220,.04) 0%,
+        rgba(180,140,220,.03) 50%,
+        rgba(120,165,220,.04) 100%
+    );
+    opacity: 0;
+    transition: opacity .4s;
+}
+.bp-future-card:hover::after { opacity: 1; }
+.bp-future-timeline {
+    font-family: var(--mono); font-size: 8px; letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(120,165,220,.6);
+    margin-bottom: 18px; display: block;
+    border: 1px solid rgba(120,165,220,.2);
+    padding: 3px 8px; display: inline-block;
+}
+.bp-future-icon { font-size: 22px; margin-bottom: 14px; opacity: .55; display: block; }
+.bp-future-name {
+    font-family: var(--serif); font-style: italic; font-weight: 300;
+    font-size: 1.4rem; letter-spacing: -.01em; color: var(--fg);
+    margin-bottom: 10px;
+}
+.bp-future-desc {
+    font-family: var(--sans); font-size: 12px; font-weight: 300; line-height: 1.65;
+    color: rgba(235,233,228,.38);
+}
+/* Scan-line animation on future cards */
+@keyframes bp-scan {
+    from { transform: translateY(-100%); }
+    to   { transform: translateY(400%); }
+}
+.bp-future-card .bp-scan-line {
+    position: absolute; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(120,165,220,.25), transparent);
+    top: 0;
+    animation: bp-scan 4s linear infinite;
+    opacity: 0;
+}
+.bp-future-card:hover .bp-scan-line { opacity: 1; }
+
+/* ── §7 JOIN ─────────────────────────────────────────────────────────── */
+#bp-join {
+    background: #040302;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,.06);
+}
+.bp-join-inner { max-width: 620px; margin: 0 auto; }
+.bp-join-form {
+    margin-top: 48px;
+    display: grid; gap: 14px;
+}
+.bp-input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 600px) { .bp-input-row { grid-template-columns: 1fr; } }
+.bp-input {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+    padding: 14px 18px;
+    font-family: var(--sans); font-size: 13px; color: var(--fg);
+    outline: none; transition: border-color .3s var(--ease);
+    width: 100%;
+}
+.bp-input::placeholder { color: rgba(235,233,228,.25); }
+.bp-input:focus { border-color: rgba(255,255,255,.3); }
+.bp-select {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+    padding: 14px 18px;
+    font-family: var(--sans); font-size: 13px; color: rgba(235,233,228,.6);
+    outline: none; transition: border-color .3s var(--ease);
+    width: 100%; cursor: pointer; appearance: none;
+}
+.bp-select:focus { border-color: rgba(255,255,255,.3); }
+.bp-submit {
+    width: 100%; padding: 18px;
+    background: var(--fg); color: #040302;
+    border: none; cursor: pointer;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .24em; text-transform: uppercase;
+    transition: opacity .3s;
+    position: relative; overflow: hidden;
+}
+.bp-submit::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg,transparent,rgba(0,0,0,.08),transparent);
+    transform: translateX(-100%); transition: transform .5s var(--ease);
+}
+.bp-submit:hover { opacity: .9; }
+.bp-submit:hover::after { transform: translateX(100%); }
+.bp-join-note {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
+    color: rgba(235,233,228,.2); margin-top: 20px;
+}
+
+/* ── BP NAV BAR ──────────────────────────────────────────────────────── */
+#bp-nav {
+    position: sticky; top: 0; z-index: 10;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 40px;
+    background: rgba(8,7,5,.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.bp-nav-brand {
+    font-family: var(--serif); font-style: italic; font-size: 22px;
+    letter-spacing: -.02em; color: var(--fg);
+}
+.bp-nav-links {
+    display: flex; gap: 28px;
+}
+.bp-nav-link {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+    color: rgba(235,233,228,.4); cursor: pointer;
+    transition: color .25s;
+    background: none; border: none; padding: 0;
+}
+.bp-nav-link:hover { color: var(--fg); }
+.bp-nav-cta {
+    font-family: var(--mono); font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+    color: #040302; background: var(--fg);
+    border: none; padding: 8px 18px; cursor: pointer;
+    transition: opacity .25s;
+}
+.bp-nav-cta:hover { opacity: .85; }
+
+/* Reveal animation for sections */
+.bp-reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity .9s var(--ease), transform .9s var(--ease);
+}
+.bp-reveal.revealed { opacity: 1; transform: translateY(0); }
+</style>
+
+<!-- BUSINESS PAGE SHELL -->
+<div id="business-page">
+
+    <!-- Sticky nav -->
+    <nav id="bp-nav">
+        <span class="bp-nav-brand">VPO.</span>
+        <div class="bp-nav-links">
+            <button class="bp-nav-link" onclick="document.getElementById('bp-process').scrollIntoView({behavior:'smooth'})">Process</button>
+            <button class="bp-nav-link" onclick="document.getElementById('bp-tiers').scrollIntoView({behavior:'smooth'})">Tiers</button>
+            <button class="bp-nav-link" onclick="document.getElementById('bp-outcomes').scrollIntoView({behavior:'smooth'})">Outcomes</button>
+            <button class="bp-nav-link" onclick="document.getElementById('bp-future').scrollIntoView({behavior:'smooth'})">Coming Soon</button>
+        </div>
+        <button class="bp-nav-cta" onclick="document.getElementById('bp-join').scrollIntoView({behavior:'smooth'})">Apply Now</button>
+    </nav>
+
+    <!-- §1 INTRO HERO -->
+    <section id="bp-intro">
+        <div class="bp-intro-inner">
+            <button class="bp-back-btn" onclick="window.dispatchEvent(new CustomEvent('vpo:exit-business'))">
+                ← Return to Experience
+            </button>
+            <p class="bp-kicker">The VPO Partner Program</p>
+            <h1 class="bp-intro-headline">Design a world<br><em>worth entering.</em></h1>
+            <p class="bp-intro-sub">VPO gives luxury brands the architecture to transcend flat e-commerce — immersive 3D flagship worlds, virtual try-on, live social shopping. Choose the tier that matches your ambition.</p>
+            <div class="bp-paths">
+                <div class="bp-path gold" onclick="document.getElementById('bp-tiers').scrollIntoView({behavior:'smooth'})">✦ Gold Partner — from $1,999/mo</div>
+                <div class="bp-path plat" onclick="document.getElementById('bp-tiers').scrollIntoView({behavior:'smooth'})">✦ Platinum Partner — from $5,999/mo</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- §2 HOW IT WORKS -->
+    <section id="bp-process" class="bp-section bp-dotgrid">
+        <div class="bp-container">
+            <div class="bp-reveal">
+                <span class="bp-kicker">01 — The Process</span>
+                <h2 class="bp-h2">Three steps to<br>your spatial flagship.</h2>
+            </div>
+            <div class="bp-steps">
+                <div class="bp-step bp-reveal step-active">
+                    <div class="bp-step-num">01</div>
+                    <h3 class="bp-step-title">Apply &amp; Consult</h3>
+                    <p class="bp-step-desc">Submit your brand profile. Our spatial commerce team reviews fit, ambition, and aligns on your vision. A dedicated architect is assigned within 48 hours.</p>
+                </div>
+                <div class="bp-step bp-reveal">
+                    <div class="bp-step-num">02</div>
+                    <h3 class="bp-step-title">Design &amp; Build</h3>
+                    <p class="bp-step-desc">Our architects design your 3D world — custom or template — with your brand DNA embedded in every surface. Platinum partners receive a full 6-week white-glove build cycle.</p>
+                </div>
+                <div class="bp-step bp-reveal">
+                    <div class="bp-step-num">03</div>
+                    <h3 class="bp-step-title">Launch &amp; Scale</h3>
+                    <p class="bp-step-desc">Go live inside VPO's curated district network. Access analytics, live sessions, virtual events, and growth consulting built into your partnership from day one.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="bp-divider">
+
+    <!-- §3 TIERS -->
+    <section id="bp-tiers" class="bp-section">
+        <div class="bp-container">
+            <div class="bp-reveal">
+                <span class="bp-kicker">02 — Partnership Tiers</span>
+                <h2 class="bp-h2">Choose your world.</h2>
+                <p class="bp-lead">Two tiers. One purpose: elevating your brand above the static. Select the level of immersion your brand deserves.</p>
+            </div>
+            <div class="bp-tier-grid">
+
+                <!-- GOLD -->
+                <div class="bp-tier-card gold bp-reveal">
+                    <div class="bp-tier-icon"><div class="tier-gem gold-gem"></div></div>
+                    <p class="bp-tier-name gold">Gold Partner</p>
+                    <h3 class="bp-tier-headline">The Boutique.</h3>
+                    <p class="bp-tier-tagline">A premium 3D store from curated templates — live in weeks, not months.</p>
+                    <div class="bp-tier-price">
+                        <div class="bp-price-amount">$1,999<span style="font-size:1.1rem;opacity:.5">/mo</span></div>
+                        <span class="bp-price-period">Billed annually · $23,988/yr</span>
+                        <span class="bp-price-note">One-time setup: $4,500 · No lock-in after year one</span>
+                    </div>
+                    <ul class="bp-tier-features">
+                        <li><span class="bp-feat-dot"></span>3 curated boutique environment templates</li>
+                        <li><span class="bp-feat-dot"></span>Up to 500 SKUs with 3D product display</li>
+                        <li><span class="bp-feat-dot"></span>Standard lighting, materials &amp; ambience</li>
+                        <li><span class="bp-feat-dot"></span>Guest + member shopping modes</li>
+                        <li><span class="bp-feat-dot"></span>Analytics dashboard — traffic, dwell, conversion</li>
+                        <li><span class="bp-feat-dot"></span>Community lobby (shared district)</li>
+                        <li><span class="bp-feat-dot"></span>Mobile + desktop compatible</li>
+                        <li><span class="bp-feat-dot"></span>Standard support — 48hr SLA</li>
+                    </ul>
+                    <button class="bp-tier-cta" onclick="document.getElementById('bp-join').scrollIntoView({behavior:'smooth'})">Apply for Gold →</button>
+                </div>
+
+                <!-- PLATINUM -->
+                <div class="bp-tier-card plat bp-reveal">
+                    <div class="bp-featured-badge">Featured</div>
+                    <div class="bp-tier-icon"><div class="tier-gem plat-gem"></div></div>
+                    <p class="bp-tier-name plat">Platinum Partner</p>
+                    <h3 class="bp-tier-headline">The Flagship.</h3>
+                    <p class="bp-tier-tagline">A fully bespoke spatial world, hand-crafted for your brand's singular identity.</p>
+                    <div class="bp-tier-price">
+                        <div class="bp-price-amount">$5,999<span style="font-size:1.1rem;opacity:.5">/mo</span></div>
+                        <span class="bp-price-period">Billed annually · $71,988/yr</span>
+                        <span class="bp-price-note">One-time setup: $12,000 · Includes 6-week white-glove build</span>
+                    </div>
+                    <ul class="bp-tier-features">
+                        <li><span class="bp-feat-dot"></span>Fully bespoke custom 3D architecture</li>
+                        <li><span class="bp-feat-dot"></span>Unlimited SKUs — full inventory sync</li>
+                        <li><span class="bp-feat-dot"></span>Virtual Try-On — clothing, eyewear, accessories</li>
+                        <li><span class="bp-feat-dot"></span>Private multiplayer lobbies — invite-only</li>
+                        <li><span class="bp-feat-dot"></span>AI Personal Styling Assistant (in-world)</li>
+                        <li><span class="bp-feat-dot"></span>Live runway &amp; launch event hosting</li>
+                        <li><span class="bp-feat-dot"></span>VIP private viewing rooms</li>
+                        <li><span class="bp-feat-dot"></span>Custom avatar system branded to your house</li>
+                        <li><span class="bp-feat-dot"></span>API access + custom domain + branded URL</li>
+                        <li><span class="bp-feat-dot"></span>Dedicated account manager + weekly consult</li>
+                        <li><span class="bp-feat-dot"></span>Priority support — 2hr SLA</li>
+                    </ul>
+                    <button class="bp-tier-cta" onclick="document.getElementById('bp-join').scrollIntoView({behavior:'smooth'})">Apply for Platinum →</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- §4 FEATURE MATRIX -->
+    <section id="bp-features" class="bp-section">
+        <div class="bp-container">
+            <div class="bp-reveal">
+                <span class="bp-kicker">03 — Feature Comparison</span>
+                <h2 class="bp-h2">What's included.</h2>
+            </div>
+            <table class="bp-feat-table bp-reveal">
+                <thead>
+                    <tr class="bp-table-head">
+                        <th></th>
+                        <th class="th-gold">Gold</th>
+                        <th class="th-plat">Platinum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="3" class="bp-feat-cat">Store Environment</td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">3D Environment</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Curated Templates</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Custom Bespoke Architecture</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Branded Custom Domain</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Day/Night Ambience Cycle</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+
+                    <tr><td colspan="3" class="bp-feat-cat">Customer Experience</td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">3D Product Display</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Virtual Try-On (AR/AI)</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">AI Personal Stylist</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Custom Avatar System</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Multiplayer / Social Lobby</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Private Invite-Only Rooms</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Live Runway / Event Hosting</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+
+                    <tr><td colspan="3" class="bp-feat-cat">Commerce &amp; Inventory</td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Product SKU Limit</td><td class="bp-feat-name" style="font-size:11px;color:rgba(235,233,228,.35);padding:0;">Up to 500</td><td class="bp-feat-name" style="font-size:11px;color:rgba(235,233,228,.35);padding:0;">Unlimited</td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Real-Time Inventory Sync</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">API Access &amp; Webhooks</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Shopify / Magento Integration</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+
+                    <tr><td colspan="3" class="bp-feat-cat">Analytics &amp; Insights</td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Traffic &amp; Dwell Analytics</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Heatmap &amp; Interaction Data</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Weekly Performance Consulting</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Monthly Report</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+
+                    <tr><td colspan="3" class="bp-feat-cat">Support &amp; Services</td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Standard Support (48hr SLA)</td><td class="bp-feat-check has-gold"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Priority Support (2hr SLA)</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">Dedicated Account Manager</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                    <tr class="bp-feat-row"><td class="bp-feat-name">White-Glove Onboarding (6 wk)</td><td class="bp-feat-check no-feat"></td><td class="bp-feat-check has-plat"></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- §5 BUSINESS OUTCOMES -->
+    <section id="bp-outcomes" class="bp-section">
+        <div class="bp-container">
+            <div class="bp-outcomes-intro bp-reveal">
+                <span class="bp-kicker">04 — Business Impact</span>
+                <h2 class="bp-h2">What changes<br>when commerce<br><em>becomes spatial.</em></h2>
+                <p class="bp-lead">Across our early partners, immersive spatial commerce consistently outperforms flat e-commerce on every meaningful metric.</p>
+            </div>
+
+            <!-- Metrics grid -->
+            <div class="bp-metrics-grid bp-reveal">
+                <div class="bp-metric" data-target="-47" data-suffix="%" data-label="Return Rate Reduction">
+                    <div class="bp-metric-bar"></div>
+                    <div class="bp-metric-icon">↩</div>
+                    <div class="bp-metric-value">—</div>
+                    <div class="bp-metric-label">Return Rate<br>Reduction</div>
+                </div>
+                <div class="bp-metric" data-target="+320" data-suffix="%" data-label="Customer Dwell Time">
+                    <div class="bp-metric-bar"></div>
+                    <div class="bp-metric-icon">⏱</div>
+                    <div class="bp-metric-value">—</div>
+                    <div class="bp-metric-label">Customer Dwell<br>Time Increase</div>
+                </div>
+                <div class="bp-metric" data-target="+185" data-suffix="%" data-label="Conversion Rate">
+                    <div class="bp-metric-bar"></div>
+                    <div class="bp-metric-icon">✦</div>
+                    <div class="bp-metric-value">—</div>
+                    <div class="bp-metric-label">Conversion Rate<br>Uplift</div>
+                </div>
+                <div class="bp-metric" data-target="+240" data-suffix="%" data-label="Brand Recall">
+                    <div class="bp-metric-bar"></div>
+                    <div class="bp-metric-icon">◈</div>
+                    <div class="bp-metric-value">—</div>
+                    <div class="bp-metric-label">Brand Recall<br>Score</div>
+                </div>
+                <div class="bp-metric" data-target="+85" data-suffix="%" data-label="Average Order Value">
+                    <div class="bp-metric-bar"></div>
+                    <div class="bp-metric-icon">◎</div>
+                    <div class="bp-metric-value">—</div>
+                    <div class="bp-metric-label">Average Order<br>Value Increase</div>
+                </div>
+                <div class="bp-metric" data-target="+510" data-suffix="%" data-label="Social Share Rate">
+                    <div class="bp-metric-bar"></div>
+                    <div class="bp-metric-icon">↗</div>
+                    <div class="bp-metric-value">—</div>
+                    <div class="bp-metric-label">Social Sharing<br>Rate Uplift</div>
+                </div>
+            </div>
+
+            <!-- Customer journey flow -->
+            <div class="bp-journey bp-reveal" id="bp-journey-flow">
+                <div class="bp-journey-line"><div class="bp-journey-line-fill"></div></div>
+                <div class="bp-journey-nodes">
+                    <div class="bp-journey-node">
+                        <div class="bp-journey-dot"></div>
+                        <div class="bp-journey-label">Discovery</div>
+                        <div class="bp-journey-val">Enters World</div>
+                    </div>
+                    <div class="bp-journey-node">
+                        <div class="bp-journey-dot"></div>
+                        <div class="bp-journey-label">Exploration</div>
+                        <div class="bp-journey-val">+8.4 min avg</div>
+                    </div>
+                    <div class="bp-journey-node">
+                        <div class="bp-journey-dot"></div>
+                        <div class="bp-journey-label">Try-On</div>
+                        <div class="bp-journey-val">AR Fitting</div>
+                    </div>
+                    <div class="bp-journey-node">
+                        <div class="bp-journey-dot"></div>
+                        <div class="bp-journey-label">Social</div>
+                        <div class="bp-journey-val">Shares lobby</div>
+                    </div>
+                    <div class="bp-journey-node">
+                        <div class="bp-journey-dot"></div>
+                        <div class="bp-journey-label">Conversion</div>
+                        <div class="bp-journey-val">+2.3x rate</div>
+                    </div>
+                    <div class="bp-journey-node">
+                        <div class="bp-journey-dot"></div>
+                        <div class="bp-journey-label">Return</div>
+                        <div class="bp-journey-val">Recurring visit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- §6 COMING SOON -->
+    <section id="bp-future" class="bp-section">
+        <div class="bp-container">
+            <div class="bp-reveal">
+                <span class="bp-kicker">05 — The Frontier</span>
+                <h2 class="bp-h2">What's coming<br>next.</h2>
+                <p class="bp-lead">VPO's roadmap is built at the edge of what commerce and technology can do. Platinum partners receive early access to every feature below.</p>
+            </div>
+
+            <div class="bp-future-grid">
+                <div class="bp-future-card bp-reveal">
+                    <div class="bp-scan-line"></div>
+                    <span class="bp-future-timeline">Q2 2025</span>
+                    <span class="bp-future-icon">◈</span>
+                    <h4 class="bp-future-name">Spatial Audio Commerce</h4>
+                    <p class="bp-future-desc">Each zone of your store plays a branded soundscape — materials, mood, and collection season expressed through generative audio. The world sounds like your brand.</p>
+                </div>
+                <div class="bp-future-card bp-reveal">
+                    <div class="bp-scan-line"></div>
+                    <span class="bp-future-timeline">Q3 2025</span>
+                    <span class="bp-future-icon">✦</span>
+                    <h4 class="bp-future-name">Neural Preference Mapping</h4>
+                    <p class="bp-future-desc">AI that learns each customer's style DNA from session behaviour — no forms, no surveys. The store quietly reorders itself around what they love before they know they love it.</p>
+                </div>
+                <div class="bp-future-card bp-reveal">
+                    <div class="bp-scan-line"></div>
+                    <span class="bp-future-timeline">Q4 2025</span>
+                    <span class="bp-future-icon">◎</span>
+                    <h4 class="bp-future-name">Haptic Fabric Simulation</h4>
+                    <p class="bp-future-desc">On compatible devices, customers feel the weight, weave, and drape of fabrics as they inspect garments — silk, wool, denim — through precision actuator patterns.</p>
+                </div>
+                <div class="bp-future-card bp-reveal">
+                    <div class="bp-scan-line"></div>
+                    <span class="bp-future-timeline">Q1 2026</span>
+                    <span class="bp-future-icon">⬡</span>
+                    <h4 class="bp-future-name">Biometric Ambience</h4>
+                    <p class="bp-future-desc">Using device camera signals, VPO subtly reads customer engagement state and adapts the environment — lighting warmth, pace of animation, even music tempo — in real time.</p>
+                </div>
+                <div class="bp-future-card bp-reveal">
+                    <div class="bp-scan-line"></div>
+                    <span class="bp-future-timeline">2026</span>
+                    <span class="bp-future-icon">◉</span>
+                    <h4 class="bp-future-name">Holographic Pop-Up Events</h4>
+                    <p class="bp-future-desc">Your digital world bleeds into the physical. AR overlays transform any surface — a window, a wall, a phone screen — into a portal to your VPO flagship during launch events.</p>
+                </div>
+                <div class="bp-future-card bp-reveal">
+                    <div class="bp-scan-line"></div>
+                    <span class="bp-future-timeline">2026</span>
+                    <span class="bp-future-icon">⊹</span>
+                    <h4 class="bp-future-name">AI Sizing Oracle</h4>
+                    <p class="bp-future-desc">A zero-return fit guarantee powered by body-scan AI. Customers enter their measurements once. The Oracle predicts fit across every brand, every cut, with 98% accuracy.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- §7 JOIN CTA -->
+    <section id="bp-join" class="bp-section">
+        <div class="bp-container">
+            <div class="bp-join-inner bp-reveal">
+                <span class="bp-kicker">06 — Apply</span>
+                <h2 class="bp-h2">Join the<br><em>Vanguard.</em></h2>
+                <p class="bp-lead" style="margin:0 auto 8px;">Access is limited to curated partner brands. Secure your place.</p>
+                <form class="bp-join-form" onsubmit="return false;">
+                    <div class="bp-input-row">
+                        <input class="bp-input" type="text" placeholder="Brand Name" required>
+                        <input class="bp-input" type="email" placeholder="Business Email" required>
+                    </div>
+                    <div class="bp-input-row">
+                        <input class="bp-input" type="text" placeholder="Website URL">
+                        <select class="bp-select">
+                            <option value="" disabled selected>Select Tier Interest</option>
+                            <option value="gold">Gold Partner — $1,999/mo</option>
+                            <option value="plat">Platinum Partner — $5,999/mo</option>
+                            <option value="unsure">Not sure yet — advise me</option>
+                        </select>
+                    </div>
+                    <button class="bp-submit" type="submit">Request Partnership Access</button>
+                </form>
+                <p class="bp-join-note">Applications reviewed within 72 hours. Limited availability per quarter.</p>
+            </div>
+        </div>
+    </section>
+
+</div><!-- #business-page -->
+
+<!-- ═══ BUSINESS PAGE INTERACTION JS ════════════════════════════════════ -->
+<script>
+(function() {
+    var bp            = document.getElementById('business-page');
+    var root3d        = document.getElementById('root');
+    var editorialRoot = document.getElementById('vpo-editorial-root');
+    /* All fixed 3D UI elements to mute while business page is active */
+    var vpo3dIds = ['cursor-glow','dsm-title-strip',
+                    'brand-corner','frame-progress','scroll-hint',
+                    'noise','vignette'];
+    var observersInited = false;
+
+    /* ── Enter business page ────────────────────────────────────────── */
+    function enterBusiness() {
+        /*
+         * Root cause of scroll-lock:
+         *  1. @react-three/drei ScrollControls inserts a div INSIDE #root
+         *     with overflow:auto that captures ALL wheel events in the viewport.
+         *  2. `body { overflow:hidden }` on some browsers prevents even a
+         *     position:fixed child from scrolling.
+         *
+         * Fix:
+         *  A. Kill pointer-events on #root → its ScrollControls div stops
+         *     intercepting wheel/touch events.
+         *  B. Change body overflow to auto (safe — nothing overflows
+         *     document flow since every element is fixed/absolute).
+         *  C. Business page is already z-200, pointer-events:auto, overflow-y:scroll.
+         */
+        document.body.style.overflow = 'auto';
+        root3d.style.pointerEvents   = 'none';
+        if (editorialRoot) editorialRoot.style.pointerEvents = 'none';
+
+        /* Fade out all 3D chrome */
+        vpo3dIds.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.style.transition = 'opacity .6s ease';
+                el.style.opacity    = '0';
+                el.style.pointerEvents = 'none';
+            }
+        });
+
+        /* Reveal business page */
+        bp.scrollTop = 0;
+        bp.classList.add('bp-visible');
+
+        /* Boot observers once (first open) */
+        if (!observersInited) {
+            observersInited = true;
+            setTimeout(initObservers, 400);
+        } else {
+            /* Re-trigger reveals that haven't fired yet */
+            setTimeout(function() {
+                bp.querySelectorAll('.bp-reveal:not(.revealed)').forEach(function(el) {
+                    revealObs.observe(el);
+                });
+            }, 400);
+        }
+    }
+
+    /* ── Exit back to 3D experience ─────────────────────────────────── */
+    function exitBusiness() {
+        bp.classList.remove('bp-visible');
+
+        setTimeout(function() {
+            /* Restore body + 3D events */
+            document.body.style.overflow  = 'hidden';
+            root3d.style.pointerEvents     = '';
+            if (editorialRoot) editorialRoot.style.pointerEvents = '';
+
+            vpo3dIds.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) { el.style.opacity = ''; el.style.pointerEvents = ''; }
+            });
+        }, 1100);
+    }
+
+    window.addEventListener('vpo:enter-business', enterBusiness);
+    window.addEventListener('vpo:exit-business',  exitBusiness);
+
+    /* ── Observers (created once, root = bp scroll container) ───────── */
+    var revealObs, metricObs, journeyObs;
+
+    function initObservers() {
+        /* Shared options: observe within the bp scroll viewport */
+        var opts = { root: bp, threshold: 0.12 };
+
+        /* Section reveal */
+        revealObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) {
+                    e.target.classList.add('revealed');
+                    revealObs.unobserve(e.target);
+                }
+            });
+        }, opts);
+
+        bp.querySelectorAll('.bp-reveal').forEach(function(el) {
+            revealObs.observe(el);
+        });
+
+        /* Metric counters */
+        metricObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) {
+                    animateCounter(e.target);
+                    metricObs.unobserve(e.target);
+                }
+            });
+        }, { root: bp, threshold: 0.35 });
+
+        bp.querySelectorAll('.bp-metric').forEach(function(el) {
+            metricObs.observe(el);
+        });
+
+        /* Journey flow */
+        journeyObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) {
+                    e.target.classList.add('journey-active');
+                    journeyObs.unobserve(e.target);
+                }
+            });
+        }, { root: bp, threshold: 0.25 });
+
+        var journey = document.getElementById('bp-journey-flow');
+        if (journey) journeyObs.observe(journey);
+
+        /* Process steps */
+        var stepObs = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) e.target.classList.add('step-active');
+            });
+        }, { root: bp, threshold: 0.4 });
+
+        bp.querySelectorAll('.bp-step').forEach(function(el) {
+            stepObs.observe(el);
+        });
+    }
+
+    /* ── Animated counter ───────────────────────────────────────────── */
+    function animateCounter(el) {
+        if (el.classList.contains('counted')) return;
+        el.classList.add('counted');
+        var target   = parseInt(el.dataset.target, 10);
+        var suffix   = el.dataset.suffix || '';
+        var absVal   = Math.abs(target);
+        var sign     = target < 0 ? '-' : '+';
+        var duration = 1800;
+        var start    = null;
+        var valueEl  = el.querySelector('.bp-metric-value');
+
+        function step(ts) {
+            if (!start) start = ts;
+            var p      = Math.min((ts - start) / duration, 1);
+            var eased  = 1 - Math.pow(1 - p, 3);   /* ease-out cubic */
+            valueEl.textContent = sign + Math.round(eased * absVal) + suffix;
+            if (p < 1) requestAnimationFrame(step);
+            else valueEl.textContent = sign + absVal + suffix;
+        }
+        requestAnimationFrame(step);
+    }
+
+})();
+</script>
+</body>
+</html>
