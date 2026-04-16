@@ -618,6 +618,15 @@
             }
         ];
 
+        /* ── Scroll buffer constants ────────────────────────────────────── *
+         * BUFFER_PAGES adds extra scroll height after the last frame so it  *
+         * "locks" as a full-screen hero while the user keeps scrolling.     *
+         * Once they enter that buffer zone we auto-trigger the business      *
+         * page transition — exactly like scrolling to a new section.        */
+        const BUFFER_PAGES  = 0.8;
+        const TOTAL_PAGES   = FRAMES.length + BUFFER_PAGES;    // 5.8
+        const FINALE_OFFSET = FRAMES.length / TOTAL_PAGES;     // ≈ 0.862
+
         /* ── Loading controller ─────────────────────────────────────────── */
         function LoadingController() {
             const { active, progress } = useProgress();
@@ -638,8 +647,12 @@
             const last = FRAMES[FRAMES.length - 1];
             const endZ = last.finale ? last.imgZ + 5.4 : last.imgZ + 10;
             useFrame((state, delta) => {
-                const targetZ = THREE.MathUtils.lerp(startZ, endZ, scroll.offset);
-                const damp = scroll.offset > .72 ? 3.1 : 4;
+                // Normalize offset to the content portion only.
+                // Camera freezes at the finale position while the user scrolls
+                // through the exit buffer zone — last frame stays hero-pinned.
+                const contentOff = Math.min(scroll.offset / FINALE_OFFSET, 1.0);
+                const targetZ = THREE.MathUtils.lerp(startZ, endZ, contentOff);
+                const damp = contentOff > .72 ? 3.1 : 4;
                 camera.position.z = THREE.MathUtils.damp(camera.position.z, targetZ, damp, delta);
                 camera.position.x = THREE.MathUtils.damp(camera.position.x, state.pointer.x * .38, 2, delta);
                 camera.position.y = THREE.MathUtils.damp(camera.position.y, state.pointer.y * .38, 2, delta);
@@ -865,9 +878,13 @@
         /* ── Scroll timeline publisher ───────────────────────────────────── */
         function ScrollTimelinePub() {
             const scroll = useScroll();
+            // One-shot ref: prevents firing vpo:enter-business every frame
+            const triggered = useRef(false);
             useFrame(() => {
-                const total = FRAMES.length;
-                const off = THREE.MathUtils.clamp(scroll.offset, 0, 1);
+                const total  = FRAMES.length;
+                const rawOff = THREE.MathUtils.clamp(scroll.offset, 0, 1);
+                // Normalize to content portion so frame timing is identical to before
+                const off = Math.min(rawOff / FINALE_OFFSET, 1.0);
                 const t = off * total;
                 const idx = Math.max(0, Math.min(total - 1, Math.floor(t)));
                 const local = t - idx;
@@ -904,6 +921,18 @@
                 window.dispatchEvent(new CustomEvent('vpo:tick', {
                     detail: { offset: off, idx, local, total, alpha, reveal, reveal2, ctaReveal }
                 }));
+
+                // ── Auto-transition into business page ───────────────────────
+                // When the user scrolls past the content zone into the buffer,
+                // fire the business page slide-in (like scrolling to a new section).
+                // Reset the trigger if they scroll back into the content zone.
+                if (rawOff > FINALE_OFFSET + 0.06 && !triggered.current) {
+                    triggered.current = true;
+                    window.dispatchEvent(new CustomEvent('vpo:enter-business'));
+                }
+                if (rawOff < FINALE_OFFSET - 0.02 && triggered.current) {
+                    triggered.current = false; // allow re-trigger if user scrolls back
+                }
             });
             return null;
         }
@@ -992,7 +1021,7 @@
                     </Environment>
 
                     <Suspense fallback={null}>
-                        <ScrollControls pages={FRAMES.length} damping={.14} distance={1.25}>
+                        <ScrollControls pages={TOTAL_PAGES} damping={.14} distance={1.25}>
                             <SceneRig />
                             <MarqueeScrollCoupler />
                             <DSMStripCoupler />
