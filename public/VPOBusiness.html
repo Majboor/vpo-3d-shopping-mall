@@ -346,11 +346,18 @@
         }
 
         /* ─── BRAND CORNER ───────────────────────────────────────────────────── */
+        @keyframes brand-corner-pulse {
+            0%, 100% { transform: scale(1);    opacity: .9; }
+            50%       { transform: scale(1.13); opacity: 1;  }
+        }
         #brand-corner {
             position: fixed;
             top: 52px; left: 32px;
-            z-index: 40; pointer-events: none;
+            z-index: 40; pointer-events: auto;
             mix-blend-mode: difference;
+            cursor: pointer;
+            animation: brand-corner-pulse 2.4s ease-in-out infinite;
+            text-decoration: none;
         }
         .brand-vpo {
             font-family: var(--serif);
@@ -440,7 +447,7 @@
 
 
     <!-- Brand corner -->
-    <div id="brand-corner">
+    <div id="brand-corner" onclick="(window.top||window).location.href='/';" title="Back to VPO">
         <span class="brand-vpo">VPO</span>
         <span class="brand-sub">Studios</span>
     </div>
@@ -1528,9 +1535,23 @@
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(255,255,255,.06);
 }
+@keyframes bp-brand-pulse {
+    0%, 100% { transform: scale(1);    opacity: .85; }
+    50%       { transform: scale(1.12); opacity: 1;   }
+}
 .bp-nav-brand {
     font-family: var(--serif); font-style: italic; font-size: 22px;
     letter-spacing: -.02em; color: var(--fg);
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+    animation: bp-brand-pulse 2.4s ease-in-out infinite;
+    text-shadow: 0 0 18px rgba(235,233,228,.3);
+    transition: color .2s, text-shadow .2s;
+}
+.bp-nav-brand:hover {
+    color: rgba(120,165,220,.95);
+    text-shadow: 0 0 24px rgba(120,165,220,.55);
 }
 .bp-nav-links {
     display: flex; gap: 28px;
@@ -1563,7 +1584,7 @@
 
     <!-- Sticky nav -->
     <nav id="bp-nav">
-        <span class="bp-nav-brand">VPO.</span>
+        <a class="bp-nav-brand" href="/" onclick="(window.top||window).location.href='/'; return false;" title="Back to VPO">VPO.</a>
         <div class="bp-nav-links">
             <button class="bp-nav-link" onclick="document.getElementById('bp-process').scrollIntoView({behavior:'smooth'})">Process</button>
             <button class="bp-nav-link" onclick="document.getElementById('bp-tiers').scrollIntoView({behavior:'smooth'})">Tiers</button>
