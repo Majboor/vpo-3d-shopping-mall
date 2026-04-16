@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSM FOR BUSINESSES | The Spatial Commerce Platform</title>
+
+    <!-- Fonts: Full VPO editorial stack -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Instrument+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Iconify Solar -->
+    <script src="https://code.iconify.design/iconify-icon/1.0.8/iconify-icon.min.js"></script>
+
+    <!-- React / Three.js via esm.sh -->
+    <script>window.process = { env: { NODE_ENV: 'production' } };</script>
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom": "https://esm.sh/react-dom@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "three": "https://esm.sh/three@0.160.0",
+            "@react-three/fiber": "https://esm.sh/@react-three/fiber@8.15.16?external=react,react-dom,three",
+            "@react-three/drei": "https://esm.sh/@react-three/drei@9.96.1?external=react,react-dom,three,@react-three/fiber"
+        }
+    }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* ─── DESIGN TOKENS ─────────────────────────────────────────────────── */
+        :root {
+            --bg:            #080705;          /* warm near-black matching VPO */
+            --fg:            hsl(40,6%,92%);   /* warm near-white #ebe9e4       */
+            --muted:         rgba(235,233,228,.48);
+            --border:        rgba(255,255,255,.07);
+            --accent-blue:   rgba(120,165,220,.52);
+            --accent-warm:   rgba(210,185,130,.50);
+            --serif:         'Cormorant Garamond', Georgia, serif;
+            --sans:          'Instrument Sans', system-ui, sans-serif;
+            --mono:          'IBM Plex Mono', ui-monospace, monospace;
+            --ease:          cubic-bezier(0.16,1,0.3,1);
+        }
+
+        /* ─── BASE ───────────────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; }
+        ::-webkit-scrollbar { display: none; }
+        body {
+            margin: 0; padding: 0;
+            background: var(--bg);
+            overflow: hidden;
+            font-family: var(--sans);
+            color: var(--fg);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Canvas root — sits above DSM strip & cursor glow but is transparent */
+        #root {
+            position: absolute; inset: 0;
+            width: 100vw; height: 100vh;
+            z-index: 10;
+        }
+
+        /* Editorial portal — always above canvas + grain */
+        #vpo-editorial-root {
+            position: fixed; inset: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 55;
+            overflow: hidden;
+        }
+
+        /* ─── AMBIENT CURSOR GLOW (z-9, shows through transparent canvas) ──── */
+        #cursor-glow {
+            position: fixed;
+            width: 700px; height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(120,165,220,.045) 0%, rgba(120,165,220,0) 68%);
+            pointer-events: none;
+            z-index: 9;
+            transform: translate(-50%,-50%);
+            left: 50%; top: 50%;
+            transition: left .6s cubic-bezier(.16,1,.3,1), top .6s cubic-bezier(.16,1,.3,1);
+            mix-blend-mode: screen;
+        }
+
+        /* ─── DSM TITLE STRIP — pure floating text, no box, no border ──────── */
+        #dsm-title-strip {
+            position: fixed;
+            top: 50%;
+            left: 0; right: 0;
+            transform: translateY(-50%);
+            height: clamp(80px, 12vh, 120px);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 50;
+            user-select: none;
+            /* No background, no border, no backdrop — just text */
+            background: transparent;
+        }
+        /* Edge masks so text fades in/out at viewport edges (not a hard clip) */
+        #dsm-title-strip::before,
+        #dsm-title-strip::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 10vw;
+            z-index: 2;
+            pointer-events: none;
+        }
+        #dsm-title-strip::before {
+            left: 0;
+            background: linear-gradient(90deg, var(--bg) 0%, transparent 100%);
+        }
+        #dsm-title-strip::after {
+            right: 0;
+            background: linear-gradient(270deg, var(--bg) 0%, transparent 100%);
+        }
+        @keyframes dsm-strip-scroll {
+            /* Rightward: enters from left, exits to right */
+            from { transform: translateX(-50%); }
+            to   { transform: translateX(0%);   }
+        }
+        .dsm-strip-track {
+            display: flex;
+            align-items: center;
+            width: max-content;
+            will-change: transform;
+            animation: dsm-strip-scroll 32s linear infinite;
+            white-space: nowrap;
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 300;
+            font-size: clamp(2rem, 4.2vw, 3.8rem);
+            letter-spacing: -0.02em;
+            /* Bright, fully visible text */
+            color: rgba(235,233,228,.92);
+            line-height: 1;
+            /* Thick blurred glow around the letterforms — the "border" effect */
+            text-shadow:
+                0 0 0px   rgba(235,233,228,.90),   /* sharp inner edge */
+                0 0 18px  rgba(235,233,228,.28),   /* close soft halo  */
+                0 0 50px  rgba(235,233,228,.12),   /* wide outer bloom */
+                0 0 90px  rgba(120,165,220,.08);   /* faint blue corona */
+        }
+        .dsm-strip-item { display: inline-block; }
+        .dsm-strip-sep  {
+            display: inline-block;
+            margin: 0 3rem;
+            /* Subtle separator dot — not a rectangle, just a glyph */
+            color: rgba(120,165,220,.50);
+            font-style: normal;
+            font-size: .45em;
+            vertical-align: middle;
+            text-shadow: 0 0 12px rgba(120,165,220,.45);
+        }
+
+        /* ─── FILM GRAIN + VIGNETTE ─────────────────────────────────────────── */
+        .noise {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 12;
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="n"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="4" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23n)"/%3E%3C/svg%3E');
+            opacity: .032; mix-blend-mode: overlay;
+        }
+        .vignette {
+            position: fixed; inset: 0;
+            pointer-events: none; z-index: 11;
+            background:
+                radial-gradient(1200px 800px at 50% 35%, rgba(0,0,0,0) 40%, rgba(0,0,0,.60) 100%),
+                radial-gradient(900px 700px at 15% 75%, rgba(8,7,5,0) 30%, rgba(8,7,5,.70) 100%);
+        }
+
+        /* ─── LOADER ─────────────────────────────────────────────────────────── */
+        #loader {
+            position: fixed; inset: 0;
+            background: var(--bg);
+            z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 1.2s var(--ease);
+        }
+        .loader-inner { display: flex; flex-direction: column; align-items: center; gap: 28px; }
+        .loader-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            color: rgba(235,233,228,.3);
+        }
+        .loader-bar {
+            width: 160px; height: 1px;
+            background: rgba(255,255,255,.08);
+            position: relative; overflow: hidden;
+        }
+        .loader-bar-fill {
+            position: absolute; top: 0; bottom: 0; left: 0;
+            background: rgba(235,233,228,.55);
+            width: 35%;
+            animation: loader-pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes loader-pulse {
+            0%,100% { transform: scaleX(.3) translateX(0); opacity: .5; }
+            50%      { transform: scaleX(1)   translateX(60%); opacity: 1; }
+        }
+
+        /* ─── TOP MARQUEE ────────────────────────────────────────────────────── */
+        #vpo-marquee-header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255,255,255,.05);
+            padding: 15px 0;
+            z-index: 40;
+            pointer-events: none;
+            background: rgba(8,7,5,.12);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* ─── SPLASH TEXT PANELS ─────────────────────────────────────────────── */
+        /*
+         * Single organic splash shape behind text — like a water-splash silhouette.
+         * No oval, no rectangle, no gradient blob. One irregular frosted form.
+         */
+        .cloud-haze {
+            position: relative;
+        }
+        /* The splash: one div, asymmetric border-radius, slight tilt, moderate blur */
+        .splash-bg {
+            position: absolute;
+            /* Slightly extended beyond text bounds, offset to feel organic */
+            top:    -28%;
+            bottom: -32%;
+            left:   -22%;
+            right:  -26%;
+            background: rgba(8,7,5,.52);
+            backdrop-filter: blur(10px) saturate(110%);
+            -webkit-backdrop-filter: blur(10px) saturate(110%);
+            pointer-events: none;
+            z-index: 0;
+            will-change: opacity, transform;
+            /* Shape and rotation set inline per-frame for variety */
+        }
+        /* Content always above the splash */
+        .cloud-content {
+            position: relative;
+            z-index: 3;
+            padding: 2.8rem 2.4rem;
+        }
+        .cloud-content--center { text-align: center; }
+
+        /* ─── VPO COLUMN POSITIONING ─────────────────────────────────────────── */
+        /* No overflow:hidden — cloud bleeds organically beyond column bounds    */
+        .vpo-column {
+            position: fixed; top: 0; bottom: 0;
+            width: clamp(300px,42vw,700px);
+            pointer-events: none;
+        }
+        .vpo-column--right { right: 0; }
+        .vpo-column--left  { left: 0; }
+        /* Subtle ambient image bleed (very low opacity) */
+        .vpo-blur-plate {
+            position: absolute; inset: -8%;
+            background-size: cover; background-position: center;
+            filter: blur(38px) saturate(105%);
+            transform: scale(1.06);
+            opacity: 0;
+            transition: opacity 1s var(--ease);
+        }
+        .vpo-blur-plate.is-on { opacity: .10; }
+
+        .vpo-panel-wrap {
+            position: relative; z-index: 4;
+            height: 100%;
+            display: flex; align-items: center;
+            padding: 5.5rem 1.25rem 4rem;
+            box-sizing: border-box;
+        }
+        .vpo-panel-wrap--right { justify-content: flex-end; padding-right: clamp(1.25rem,3.5vw,2.5rem); }
+        .vpo-panel-wrap--left  { justify-content: flex-start; padding-left: clamp(1.25rem,3.5vw,2.5rem); }
+
+        /* Center / finale layout */
+        .vpo-center-wrap {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 2rem; box-sizing: border-box;
+        }
+
+        /* ─── HEADLINE REVEAL ────────────────────────────────────────────────── */
+        .headline-reveal {
+            font-family: var(--serif);
+            font-style: italic;
+            font-weight: 300;
+            color: var(--fg);
+            margin: 0 0 1.5rem;
+            line-height: 1.06;
+            letter-spacing: -.02em;
+        }
+
+        /* ─── FRAME PROGRESS (bottom-left) ──────────────────────────────────── */
+        #frame-progress {
+            position: fixed;
+            bottom: 32px; left: 32px;
+            z-index: 40;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        #frame-counter {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: rgba(235,233,228,.3);
+        }
+        #frame-dots {
+            display: flex; gap: 6px; align-items: center;
+        }
+        .frame-dot {
+            width: 5px; height: 5px; border-radius: 999px;
+            background: rgba(235,233,228,.18);
+            transition: background .4s var(--ease), transform .4s var(--ease);
+        }
+        .frame-dot.active {
+            background: rgba(235,233,228,.80);
+            transform: scale(1.3);
+        }
+
+        /* ─── SCROLL INDICATOR (bottom-right) ───────────────────────────────── */
+        #scroll-hint {
+            position: fixed;
+            bottom: 32px; right: 32px;
+            z-index: 40; pointer-events: none;
+            display: flex; flex-direction: column;
+            align-items: flex-end; gap: 6px;
+            mix-blend-mode: difference;
+        }
+        .scroll-hint-dot {
+            width: 6px; height: 6px; border-radius: 999px;
+            background: rgba(235,233,228,.8);
+            animation: scroll-dot-pulse 2.2s ease-in-out infinite;
+        }
+        @keyframes scroll-dot-pulse {
+            0%,100% { opacity: .8; transform: scale(1); }
+            50%      { opacity: .35; transform: scale(.7); }
+        }
+        .scroll-hint-text {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 13px;
+            color: rgba(235,233,228,.55);
+        }
+
+        /* ─── BRAND CORNER ───────────────────────────────────────────────────── */
+        #brand-corner {
+            position: fixed;
+            top: 52px; left: 32px;
+            z-index: 40; pointer-events: none;
+            mix-blend-mode: difference;
+        }
+        .brand-vpo {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 26px;
+            letter-spacing: -.02em;
+            color: white;
+            line-height: 1;
+            display: block;
+        }
+        .brand-sub {
+            font-family: var(--mono);
+            font-size: 9px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: rgba(235,233,228,.45);
+            display: block;
+            margin-top: 4px;
+        }
+
+        /* ─── CTA BUTTON ─────────────────────────────────────────────────────── */
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 14px 32px;
+            background: var(--fg);
+            color: var(--bg);
+            border: none;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+            transition: opacity .3s var(--ease);
+        }
+        .cta-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.18) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform .6s var(--ease);
+        }
+        .cta-btn:hover { opacity: .9; }
+        .cta-btn:hover::after { transform: translateX(100%); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Film grain + vignette -->
+    <div class="noise"></div>
+    <div class="vignette"></div>
+
+    <!-- Ambient cursor glow (behind canvas, shows through transparency) -->
+    <div id="cursor-glow" aria-hidden="true"></div>
+
+    <!-- DSM FOR BUSINESSES — horizontal moving title strip (behind canvas) -->
+    <div id="dsm-title-strip" aria-hidden="true">
+        <div class="dsm-strip-track">
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <!-- Exact duplicate for seamless loop -->
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-inner">
+            <span class="loader-label">Initializing Environment</span>
+            <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+        </div>
+    </div>
+
+    <!-- Top marquee strip -->
+    <div id="vpo-marquee-header">
+        <div class="vpo-marquee-inner" data-vpo-marquee-track>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <!-- duplicate -->
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
+            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
+        </div>
+    </div>
+
+    <!-- Brand corner -->
+    <div id="brand-corner">
+        <span class="brand-vpo">VPO</span>
+        <span class="brand-sub">Studios</span>
+    </div>
+
+    <!-- Frame progress -->
+    <div id="frame-progress">
+        <span id="frame-counter">01 / 05</span>
+        <div id="frame-dots">
+            <div class="frame-dot active"></div>
+            <div class="frame-dot"></div>
+            <div class="frame-dot"></div>
+            <div class="frame-dot"></div>
+            <div class="frame-dot"></div>
+        </div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="scroll-hint">
+        <div class="scroll-hint-dot"></div>
+        <span class="scroll-hint-text">Scroll to explore</span>
+    </div>
+
+    <!-- 3D canvas (transparent — DSM strip & cursor glow show through) -->
+    <div id="root"></div>
+    <!-- Editorial overlays -->
+    <div id="vpo-editorial-root" aria-live="polite"></div>
+
+    <!-- Cursor glow tracker -->
+    <script>
+        (function() {
+            var glow = document.getElementById('cursor-glow');
+            var rx = window.innerWidth / 2, ry = window.innerHeight / 2;
+            window.addEventListener('mousemove', function(e) {
+                rx += (e.clientX - rx) * 0.12;
+                ry += (e.clientY - ry) * 0.12;
+                glow.style.left = e.clientX + 'px';
+                glow.style.top  = e.clientY + 'px';
+            });
+        })();
+    </script>
+
+    <!-- Failsafe loader dismiss -->
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                var loader = document.getElementById('loader');
+                if (loader) { loader.style.opacity = '0'; setTimeout(function() { loader.remove(); }, 1200); }
+            }, 9000);
+        });
+    </script>
+
+    <!-- ═══ REACT + THREE.JS APPLICATION ════════════════════════════════════ -->
+    <script type="text/babel" data-type="module">
+        import React, { useRef, useState, useEffect, Suspense } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import * as THREE from 'three';
+        import { Canvas, useFrame, useThree } from '@react-three/fiber';
+        import { ScrollControls, useScroll, Image as DreiImage, Environment, Lightformer, useProgress, Text, Float } from '@react-three/drei';
+
+        /* ── Error boundary ─────────────────────────────────────────────── */
+        class ErrorBoundary extends React.Component {
+            constructor(props) { super(props); this.state = { hasError: false }; }
+            static getDerivedStateFromError() { return { hasError: true }; }
+            componentDidCatch(e) { console.error('[VPO]', e); }
+            render() { return this.state.hasError ? (this.props.fallback ?? null) : this.props.children; }
+        }
+
+        function PlaceholderImage({ position = [0,0,0], scale = [3,4.5] }) {
+            const mesh = useRef();
+            useFrame(({ clock: { elapsedTime: t } }) => {
+                if (mesh.current) mesh.current.material.opacity = .82 + Math.sin(t * .55) * .03;
+            });
+            return (
+                <mesh ref={mesh} position={position} scale={[scale[0], scale[1], 1]}>
+                    <planeGeometry args={[1,1]} />
+                    <meshStandardMaterial transparent opacity={.85}
+                        color={new THREE.Color('#1e1c19')}
+                        roughness={.96} metalness={.04}
+                        emissive={new THREE.Color('#0a0907')} emissiveIntensity={.28}
+                    />
+                </mesh>
+            );
+        }
+
+        /* ── Story frames ───────────────────────────────────────────────── */
+        const FRAMES = [
+            {
+                id: 1,
+                title: "Beyond the Grid.",
+                subtitle: "01 / PARADIGM SHIFT",
+                copy: "Flat commerce is a compromise. VPO elevates your brand beyond static product pages into immersive, high-fidelity 3D outlet worlds. Transform the act of buying into a memorable spatial experience.",
+                align: 'right',
+                imgX: -2.2, imgY: .1, imgZ: -4,
+                scale: [3, 4.5],
+                url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 2,
+                title: "Free-Roam Discovery.",
+                subtitle: "02 / SPATIAL COMMERCE",
+                copy: "Grant your customers agency to freely navigate curated architectural environments tailored to your brand's heritage. Discovery becomes intuitive, physical, and deeply engaging.",
+                align: 'left',
+                imgX: 2.2, imgY: -.3, imgZ: -12,
+                scale: [3, 4.5],
+                url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 3,
+                title: "Shared Presence.",
+                subtitle: "03 / MULTIPLAYER SHOPPING",
+                copy: "Luxury is an experience best shared. Enable global clientele to invite friends, join exclusive private lobbies, and explore your latest collections together in real-time.",
+                align: 'right',
+                imgX: -2.0, imgY: .5, imgZ: -20,
+                scale: [3.5, 2.5],
+                url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 4,
+                title: "Digital Flagships.",
+                subtitle: "04 / BRANDED WORLDS",
+                copy: "Construct atmospheres that defy physical limitations. From gravity-defying runway spaces to serene minimalist pavilions, forge a differentiated digital presence commanding premium positioning.",
+                align: 'left',
+                imgX: 2.5, imgY: -.2, imgZ: -28,
+                scale: [3, 4.5],
+                url: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1600&auto=format&fit=crop"
+            },
+            {
+                id: 5,
+                title: "Build the world your brand deserves.",
+                subtitle: "05 / ENTER VPO",
+                copy: "Enter the next era of luxury retail — spatial, social, and unmistakably premium. Limited partners. Curated districts. Designed for legacy brands.",
+                align: 'center',
+                finale: true,
+                imgX: 0, imgY: 0, imgZ: -34,
+                scale: [7.2, 4.6],
+                url: "https://images.unsplash.com/photo-1558442074-3c19857bc1dc?q=80&w=2000&auto=format&fit=crop"
+            }
+        ];
+
+        /* ── Loading controller ─────────────────────────────────────────── */
+        function LoadingController() {
+            const { active, progress } = useProgress();
+            useEffect(() => {
+                if (!active && progress === 100) {
+                    const loader = document.getElementById('loader');
+                    if (loader) { loader.style.opacity = '0'; setTimeout(() => loader.remove(), 1200); }
+                }
+            }, [active, progress]);
+            return null;
+        }
+
+        /* ── Camera rig ─────────────────────────────────────────────────── */
+        function SceneRig() {
+            const { camera } = useThree();
+            const scroll = useScroll();
+            const startZ = 4;
+            const last = FRAMES[FRAMES.length - 1];
+            const endZ = last.finale ? last.imgZ + 5.4 : last.imgZ + 10;
+            useFrame((state, delta) => {
+                const targetZ = THREE.MathUtils.lerp(startZ, endZ, scroll.offset);
+                const damp = scroll.offset > .72 ? 3.1 : 4;
+                camera.position.z = THREE.MathUtils.damp(camera.position.z, targetZ, damp, delta);
+                camera.position.x = THREE.MathUtils.damp(camera.position.x, state.pointer.x * .38, 2, delta);
+                camera.position.y = THREE.MathUtils.damp(camera.position.y, state.pointer.y * .38, 2, delta);
+            });
+            return null;
+        }
+
+        /* ── 3D floating images ─────────────────────────────────────────── */
+        function PremiumImage({ data }) {
+            const groupRef = useRef();
+            const [urlOk, setUrlOk] = useState(null);
+            useEffect(() => {
+                setUrlOk(null);
+                let cancelled = false;
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload  = () => { if (!cancelled) setUrlOk(true);  };
+                img.onerror = () => { if (!cancelled) setUrlOk(false); };
+                img.src = data.url;
+                return () => { cancelled = true; img.onload = null; img.onerror = null; };
+            }, [data.url]);
+            useFrame(({ clock: { elapsedTime: t } }) => {
+                if (!groupRef.current) return;
+                const fin = !!data.finale;
+                groupRef.current.position.y = data.imgY + Math.sin(t * .5 + data.id) * (fin ? .04 : .14);
+                groupRef.current.rotation.y = Math.sin(t * .28) * (fin ? .005 : .018);
+            });
+            return (
+                <group ref={groupRef} position={[data.imgX, data.imgY, data.imgZ]}>
+                    {(urlOk === false || urlOk === null) && (
+                        <PlaceholderImage position={[0,0,0]} scale={data.scale} />
+                    )}
+                    {urlOk === true && (
+                        <ErrorBoundary fallback={<PlaceholderImage position={[0,0,0]} scale={data.scale} />}>
+                            <DreiImage
+                                url={data.url}
+                                position={[0,0,0]}
+                                scale={data.scale}
+                                toneMapped={true}
+                                transparent
+                                opacity={data.finale ? 1 : .88}
+                            />
+                        </ErrorBoundary>
+                    )}
+                </group>
+            );
+        }
+
+        /* ── Hero 3D title removed — CSS strip at z-50 handles the title ── */
+
+        /* ── Marquee scroll coupler ─────────────────────────────────────── */
+        function MarqueeScrollCoupler() {
+            const scroll = useScroll();
+            useFrame(() => {
+                const el = document.querySelector('[data-vpo-marquee-track]');
+                if (!el) return;
+                const sec = Math.max(12, 34 - scroll.offset * 8);
+                el.style.animationDuration = `${sec}s`;
+            });
+            return null;
+        }
+
+        /* ── DSM strip: fade out strip as scroll begins, slightly speed up ─ */
+        function DSMStripCoupler() {
+            const scroll = useScroll();
+            useFrame(() => {
+                const strip = document.getElementById('dsm-title-strip');
+                const track = document.querySelector('.dsm-strip-track');
+                if (!strip || !track) return;
+
+                const off = scroll.offset;
+
+                // Fade the entire strip band out once the user scrolls
+                // Starts fading at offset 0.04, fully gone by 0.18
+                const stripOpacity = Math.max(0, 1 - off * 7);
+                strip.style.opacity = String(stripOpacity);
+
+                // Slightly speed up with scroll momentum (max at first frame)
+                const sec = Math.max(18, 32 - off * 12);
+                track.style.animationDuration = `${sec}s`;
+            });
+            return null;
+        }
+
+        /* ── Word-by-word body text reveal ─────────────────────────────── */
+        function ComposedBody({ text, progress = 0, style = {} }) {
+            const words = String(text || '').split(' ');
+            const n = Math.max(1, words.length);
+            return (
+                <p style={{
+                    margin: 0,
+                    fontFamily: 'var(--sans)',
+                    fontSize: '14px',
+                    fontWeight: 300,
+                    lineHeight: 1.72,
+                    color: 'rgba(235,233,228,.78)',
+                    ...style
+                }}>
+                    {words.map((w, i) => {
+                        const t = i / n;
+                        const o = THREE.MathUtils.clamp((progress - t) * 5.5, 0, 1);
+                        return (
+                            <span key={`${w}-${i}`} style={{
+                                display: 'inline-block',
+                                opacity: o,
+                                transform: `translateY(${(1 - o) * 6}px)`,
+                                transition: 'opacity 60ms linear, transform 60ms linear',
+                                marginRight: i === n - 1 ? 0 : '.3em',
+                            }}>
+                                {w}
+                            </span>
+                        );
+                    })}
+                </p>
+            );
+        }
+
+        /* ── Headline mask reveal ────────────────────────────────────────── */
+        function HeadlineReveal({ text, reveal, sizeClass = 'text-4xl md:text-5xl' }) {
+            const clip = `inset(0 ${(1 - reveal) * 100}% 0 0)`;
+            return (
+                <h2 className={`headline-reveal ${sizeClass}`} style={{ clipPath: clip, WebkitClipPath: clip }}>
+                    {text}
+                </h2>
+            );
+        }
+
+        /* ── Splash text panel ───────────────────────────────────────────────── */
+        /*
+         * Each frame gets a unique water-splash silhouette behind its text.
+         * border-radius shorthand: top-left top-right bottom-right bottom-left
+         *   / top-left top-right bottom-right bottom-left (vertical radii)
+         * Slight per-frame rotation makes each one feel distinct and organic.
+         */
+        const SPLASH_SHAPES = [
+            // Frame 1 — right-aligned copy, splash leans left-heavy
+            { borderRadius: '62% 38% 44% 56% / 34% 58% 42% 66%', transform: 'rotate(-6deg) skewX(3deg)',  top: '-30%', bottom: '-34%', left: '-24%', right: '-20%' },
+            // Frame 2 — left-aligned copy, splash leans right
+            { borderRadius: '38% 62% 56% 44% / 66% 34% 62% 38%', transform: 'rotate(5deg)  skewX(-4deg)', top: '-26%', bottom: '-32%', left: '-18%', right: '-28%' },
+            // Frame 3 — right-aligned
+            { borderRadius: '55% 45% 38% 62% / 42% 60% 40% 58%', transform: 'rotate(-4deg) skewY(2deg)',  top: '-32%', bottom: '-28%', left: '-22%', right: '-18%' },
+            // Frame 4 — left-aligned
+            { borderRadius: '44% 56% 62% 38% / 58% 40% 56% 44%', transform: 'rotate(6deg)  skewX(3deg)',  top: '-28%', bottom: '-36%', left: '-20%', right: '-24%' },
+            // Frame 5 — center finale, wider and flatter splash
+            { borderRadius: '50% 50% 44% 56% / 38% 50% 52% 42%', transform: 'rotate(-2deg) skewX(1deg)',  top: '-24%', bottom: '-28%', left: '-16%', right: '-18%' },
+        ];
+
+        function TextPanelInner({ frame, alpha, reveal, reveal2, ctaReveal }) {
+            const y = (1 - alpha) * 16;
+            const isCenter = frame.align === 'center';
+            const isFinale = !!frame.finale;
+            const splash = SPLASH_SHAPES[(frame.id - 1) % SPLASH_SHAPES.length];
+
+            const sizeClass = isFinale
+                ? 'text-4xl md:text-5xl lg:text-6xl'
+                : 'text-4xl md:text-5xl';
+
+            return (
+                <div
+                    className="cloud-haze"
+                    style={{
+                        transform: `translateY(${y}px)`,
+                        maxWidth: isFinale ? '44rem' : '36rem',
+                        width: '100%',
+                    }}
+                >
+                    {/* Single water-splash shape — no oval, no rectangle */}
+                    <div
+                        className="splash-bg"
+                        aria-hidden="true"
+                        style={{
+                            opacity: alpha,
+                            borderRadius: splash.borderRadius,
+                            transform: splash.transform,
+                            top: splash.top,
+                            bottom: splash.bottom,
+                            left: splash.left,
+                            right: splash.right,
+                        }}
+                    />
+
+                    {/* Text content */}
+                    <div className={`cloud-content${isCenter ? ' cloud-content--center' : ''}`}>
+
+                        {/* Kicker */}
+                        <span style={{
+                            display: 'block',
+                            fontFamily: 'var(--mono)',
+                            fontSize: '9px',
+                            letterSpacing: '.28em',
+                            textTransform: 'uppercase',
+                            marginBottom: '1.4rem',
+                            color: 'rgba(120,165,220,.85)',
+                            opacity: THREE.MathUtils.clamp((reveal - .04) * 7, 0, 1),
+                        }}>
+                            {frame.subtitle}
+                        </span>
+
+                        {/* Headline */}
+                        <HeadlineReveal text={frame.title} reveal={reveal} sizeClass={sizeClass} />
+
+                        {/* Body copy */}
+                        <ComposedBody text={frame.copy} progress={reveal2} />
+
+                        {/* CTA — finale only */}
+                        {isCenter && (
+                            <div style={{ opacity: ctaReveal, marginTop: '2.5rem', display: 'flex', justifyContent: 'center' }}>
+                                <button
+                                    type="button"
+                                    className="cta-btn"
+                                    onClick={() => console.log('[VPO] Request Access')}
+                                >
+                                    Request Access
+                                    <iconify-icon icon="solar:arrow-right-linear" stroke-width="1.5" style={{ fontSize: '14px' }}></iconify-icon>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        /* ── Scroll timeline publisher ───────────────────────────────────── */
+        function ScrollTimelinePub() {
+            const scroll = useScroll();
+            useFrame(() => {
+                const total = FRAMES.length;
+                const off = THREE.MathUtils.clamp(scroll.offset, 0, 1);
+                const t = off * total;
+                const idx = Math.max(0, Math.min(total - 1, Math.floor(t)));
+                const local = t - idx;
+                const isFinale = !!(FRAMES[idx] && FRAMES[idx].finale);
+
+                const fadeIn  = THREE.MathUtils.smoothstep(local, .06, .26);
+                const fadeOut = isFinale
+                    ? 1 - THREE.MathUtils.smoothstep(local, .90, .998)
+                    : 1 - THREE.MathUtils.smoothstep(local, .74, .94);
+                const alpha = Math.max(0, Math.min(1, fadeIn * fadeOut));
+
+                const reveal  = THREE.MathUtils.clamp((local - (isFinale ? .08 : .10)) / (isFinale ? .42 : .48), 0, 1);
+                const reveal2 = THREE.MathUtils.clamp((local - (isFinale ? .16 : .20)) / (isFinale ? .48 : .52), 0, 1);
+                const ctaReveal = THREE.MathUtils.clamp((local - (isFinale ? .36 : .42)) / (isFinale ? .38 : .34), 0, 1);
+
+                // Update frame progress DOM
+                const counter = document.getElementById('frame-counter');
+                if (counter) counter.textContent = `0${idx + 1} / 0${total}`;
+                const dots = document.querySelectorAll('.frame-dot');
+                dots.forEach((d, i) => {
+                    d.classList.toggle('active', i === idx);
+                });
+
+                // Scroll hint fades when scrolling begins
+                const hint = document.getElementById('scroll-hint');
+                if (hint) hint.style.opacity = String(Math.max(0, 1 - off * 12));
+
+                const el = document.getElementById('vpo-editorial-root');
+                if (el) {
+                    el.style.setProperty('--vpo-scroll', String(off));
+                    el.dataset.frameIndex = String(idx);
+                }
+
+                window.dispatchEvent(new CustomEvent('vpo:tick', {
+                    detail: { offset: off, idx, local, total, alpha, reveal, reveal2, ctaReveal }
+                }));
+            });
+            return null;
+        }
+
+        /* ── Editorial sheet (mounted in #vpo-editorial-root) ────────────── */
+        function EditorialSheet({ tick }) {
+            const frame = FRAMES[tick.idx];
+            if (!frame) return null;
+            const { alpha, reveal, reveal2, ctaReveal } = tick;
+
+            return (
+                <>
+                    {/* Left / right panels */}
+                    {frame.align !== 'center' && (
+                        <div
+                            className={`vpo-column vpo-column--${frame.align}`}
+                            style={{ opacity: alpha }}
+                        >
+                            {/* Very subtle ambient image bleed */}
+                            <div
+                                className={`vpo-blur-plate${alpha > .06 ? ' is-on' : ''}`}
+                                style={{ backgroundImage: `url(${frame.url})` }}
+                                aria-hidden="true"
+                            />
+                            <div className={`vpo-panel-wrap vpo-panel-wrap--${frame.align}`}>
+                                <TextPanelInner
+                                    frame={frame}
+                                    alpha={alpha}
+                                    reveal={reveal}
+                                    reveal2={reveal2}
+                                    ctaReveal={ctaReveal}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Center / finale panel */}
+                    {frame.align === 'center' && (
+                        <div className="vpo-center-wrap" style={{ opacity: alpha }}>
+                            <TextPanelInner
+                                frame={frame}
+                                alpha={alpha}
+                                reveal={reveal}
+                                reveal2={reveal2}
+                                ctaReveal={ctaReveal}
+                            />
+                        </div>
+                    )}
+                </>
+            );
+        }
+
+        function EditorialApp() {
+            const [tick, setTick] = useState({ offset:0, idx:0, local:0, total:FRAMES.length, alpha:0, reveal:0, reveal2:0, ctaReveal:0 });
+            useEffect(() => {
+                const onTick = (e) => setTick(e.detail);
+                window.addEventListener('vpo:tick', onTick);
+                return () => window.removeEventListener('vpo:tick', onTick);
+            }, []);
+            return <EditorialSheet tick={tick} />;
+        }
+
+        /* ── Main canvas app ─────────────────────────────────────────────── */
+        function App() {
+            return (
+                <Canvas
+                    gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping }}
+                    onCreated={({ gl }) => {
+                        /* Transparent clear — DSM strip (z-5) and cursor glow (z-9) show through */
+                        gl.setClearColor(0x080705, 0);
+                    }}
+                    camera={{ position: [0, 0, 4], fov: 45 }}
+                    dpr={[1, 2]}
+                >
+                    <LoadingController />
+                    {/* Fog uses warm bg color to fade depth correctly */}
+                    <fog attach="fog" args={['#080705', 5, 24]} />
+
+                    <ambientLight intensity={.38} />
+                    <directionalLight position={[5, 5, 5]} intensity={.95} color="#ffffff" />
+
+                    <Environment resolution={128}>
+                        <group rotation={[-Math.PI / 2, 0, 0]}>
+                            <Lightformer intensity={.45} form="rect" position={[0, 5, -5]} scale={[10, 10, 1]} target={[0, 0, 0]} color="#ffffff" />
+                        </group>
+                    </Environment>
+
+                    <Suspense fallback={null}>
+                        <ScrollControls pages={FRAMES.length} damping={.14} distance={1.25}>
+                            <SceneRig />
+                            <MarqueeScrollCoupler />
+                            <DSMStripCoupler />
+                            <ScrollTimelinePub />
+                            <group>
+                                {FRAMES.map((frame) => (
+                                    <PremiumImage key={frame.id} data={frame} />
+                                ))}
+                            </group>
+                        </ScrollControls>
+                    </Suspense>
+                </Canvas>
+            );
+        }
+
+        /* Mount editorial layer */
+        const editorialEl = document.getElementById('vpo-editorial-root');
+        if (editorialEl) {
+            try { createRoot(editorialEl).render(<EditorialApp />); }
+            catch(e) { console.error('[VPO] editorial mount error:', e); }
+        }
+
+        /* Mount 3D canvas */
+        const rootEl = document.getElementById('root');
+        if (rootEl) {
+            try {
+                createRoot(rootEl).render(<App />);
+                window.__VPO_MOUNTED = true;
+            } catch(e) { console.error('[VPO] canvas mount error:', e); }
+        }
+    </script>
+
+    <!-- Marquee CSS (after Tailwind to prevent conflicts) -->
+    <style id="vpo-marquee-styles">
+        @keyframes vpo-marquee-scroll-right {
+            from { transform: translate3d(-50%, 0, 0); }
+            to   { transform: translate3d(0, 0, 0); }
+        }
+        #vpo-marquee-header .vpo-marquee-inner {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 0;
+            width: max-content;
+            will-change: transform;
+            animation-name: vpo-marquee-scroll-right;
+            animation-duration: 34s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+        #vpo-marquee-header .vpo-marquee-item,
+        #vpo-marquee-header .vpo-marquee-sep {
+            flex-shrink: 0;
+        }
+    </style>
+</body>
+</html>
