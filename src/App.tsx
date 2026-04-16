@@ -9,6 +9,7 @@ import Scene2Test from "./pages/Scene2Test";
 import Scene3Test from "./pages/Scene3Test";
 import GalleryEditorial from "./pages/GalleryEditorial";
 import Fashion3DTest from "./pages/Fashion3DTest";
+import VPOBusiness from "./pages/VPOBusiness";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/scene3-test" element={<Scene3Test />} />
           <Route path="/gallery" element={<GalleryEditorial />} />
           <Route path="/fashion-3d-test" element={<Fashion3DTest />} />
+          <Route path="/vpo-business" element={<VPOBusiness />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
