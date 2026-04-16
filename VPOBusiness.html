@@ -850,10 +850,10 @@
                                 <button
                                     type="button"
                                     className="cta-btn"
-                                    onClick={() => console.log('[VPO] Request Access')}
+                                    onClick={() => window.dispatchEvent(new CustomEvent('vpo:enter-business'))}
                                 >
-                                    Request Access
-                                    <iconify-icon icon="solar:arrow-right-linear" stroke-width="1.5" style={{ fontSize: '14px' }}></iconify-icon>
+                                    Explore Partner Program
+                                    <iconify-icon icon="solar:arrow-down-linear" stroke-width="1.5" style={{ fontSize: '14px' }}></iconify-icon>
                                 </button>
                             </div>
                         )}
