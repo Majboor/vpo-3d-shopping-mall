@@ -209,18 +209,6 @@
             50%      { transform: scaleX(1)   translateX(60%); opacity: 1; }
         }
 
-        /* ─── TOP MARQUEE ────────────────────────────────────────────────────── */
-        #vpo-marquee-header {
-            position: fixed; top: 0; left: 0; width: 100%;
-            overflow: hidden;
-            border-bottom: 1px solid rgba(255,255,255,.05);
-            padding: 15px 0;
-            z-index: 40;
-            pointer-events: none;
-            background: rgba(8,7,5,.12);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
 
         /* ─── SPLASH TEXT PANELS ─────────────────────────────────────────────── */
         /*
@@ -450,32 +438,6 @@
         </div>
     </div>
 
-    <!-- Top marquee strip -->
-    <div id="vpo-marquee-header">
-        <div class="vpo-marquee-inner" data-vpo-marquee-track>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <!-- duplicate -->
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-            <span class="vpo-marquee-item" style="font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(235,233,228,.42);white-space:nowrap;">VPO FOR BUSINESSES</span>
-            <span class="vpo-marquee-sep" aria-hidden="true" style="width:5px;height:5px;border-radius:50%;background:rgba(120,165,220,.38);flex-shrink:0;display:inline-block;margin:0 2.5rem;"></span>
-        </div>
-    </div>
 
     <!-- Brand corner -->
     <div id="brand-corner">
@@ -702,18 +664,6 @@
         }
 
         /* ── Hero 3D title removed — CSS strip at z-50 handles the title ── */
-
-        /* ── Marquee scroll coupler ─────────────────────────────────────── */
-        function MarqueeScrollCoupler() {
-            const scroll = useScroll();
-            useFrame(() => {
-                const el = document.querySelector('[data-vpo-marquee-track]');
-                if (!el) return;
-                const sec = Math.max(12, 34 - scroll.offset * 8);
-                el.style.animationDuration = `${sec}s`;
-            });
-            return null;
-        }
 
         /* ── DSM strip: fade out strip as scroll begins, slightly speed up ─ */
         function DSMStripCoupler() {
@@ -1023,7 +973,6 @@
                     <Suspense fallback={null}>
                         <ScrollControls pages={TOTAL_PAGES} damping={.14} distance={1.25}>
                             <SceneRig />
-                            <MarqueeScrollCoupler />
                             <DSMStripCoupler />
                             <ScrollTimelinePub />
                             <group>
@@ -1054,29 +1003,6 @@
         }
     </script>
 
-    <!-- Marquee CSS (after Tailwind to prevent conflicts) -->
-    <style id="vpo-marquee-styles">
-        @keyframes vpo-marquee-scroll-right {
-            from { transform: translate3d(-50%, 0, 0); }
-            to   { transform: translate3d(0, 0, 0); }
-        }
-        #vpo-marquee-header .vpo-marquee-inner {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 0;
-            width: max-content;
-            will-change: transform;
-            animation-name: vpo-marquee-scroll-right;
-            animation-duration: 34s;
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-        }
-        #vpo-marquee-header .vpo-marquee-item,
-        #vpo-marquee-header .vpo-marquee-sep {
-            flex-shrink: 0;
-        }
-    </style>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      BUSINESS PAGE — slides over the 3D experience on "Explore" click
@@ -1992,7 +1918,7 @@
     var root3d        = document.getElementById('root');
     var editorialRoot = document.getElementById('vpo-editorial-root');
     /* All fixed 3D UI elements to mute while business page is active */
-    var vpo3dIds = ['cursor-glow','dsm-title-strip','vpo-marquee-header',
+    var vpo3dIds = ['cursor-glow','dsm-title-strip',
                     'brand-corner','frame-progress','scroll-hint',
                     'noise','vignette'];
     var observersInited = false;
