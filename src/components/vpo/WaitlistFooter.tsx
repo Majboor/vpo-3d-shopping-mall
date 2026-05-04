@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const WaitlistFooter = () => {
   const [email, setEmail] = useState("");
@@ -21,6 +22,12 @@ const WaitlistFooter = () => {
           <p className="text-base text-white/40 font-sans leading-relaxed mb-10">
             Access is currently limited to waitlist members and partner invites. Secure your place in the queue.
           </p>
+          <Link
+            to="/business#bp-join"
+            className="mb-10 inline-flex border border-white/20 px-6 py-3 text-[10px] uppercase tracking-[0.22em] text-white hover:bg-white hover:text-black transition-colors"
+          >
+            Contact Us
+          </Link>
 
           {/* Email Form */}
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">

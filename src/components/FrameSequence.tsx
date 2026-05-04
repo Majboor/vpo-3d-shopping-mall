@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import vpoHeroBg from "@/assets/vpo-hero-bg.jpeg";
+import vpoHeroBgMobile from "@/assets/vpo-hero-bg-mobile.png";
 import VersionSelector from "./VersionSelector";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -226,13 +227,16 @@ const FrameSequence = () => {
       <section 
         className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background"
       >
-        <img 
-          src={vpoHeroBg} 
-          alt="" 
-          className="absolute inset-0 w-full h-full object-cover"
-          loading="eager"
-          decoding="sync"
-        />
+        <picture className="absolute inset-0 h-full w-full">
+          <source media="(max-width: 767px)" srcSet={vpoHeroBgMobile} />
+          <img
+            src={vpoHeroBg}
+            alt=""
+            className="h-full w-full object-cover object-center"
+            loading="eager"
+            decoding="sync"
+          />
+        </picture>
       </section>
     );
   }
@@ -292,13 +296,16 @@ const FrameSequence = () => {
         <section 
           className="relative z-10 min-h-screen flex items-center justify-center overflow-hidden bg-background"
         >
-          <img 
-            src={vpoHeroBg} 
-            alt="" 
-            className="absolute inset-0 w-full h-full object-cover"
-            loading="eager"
-            decoding="sync"
-          />
+          <picture className="absolute inset-0 h-full w-full">
+            <source media="(max-width: 767px)" srcSet={vpoHeroBgMobile} />
+            <img
+              src={vpoHeroBg}
+              alt=""
+              className="h-full w-full object-cover object-center"
+              loading="eager"
+              decoding="sync"
+            />
+          </picture>
           
         </section>
       )}

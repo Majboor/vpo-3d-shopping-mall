@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DSM FOR BUSINESSES | The Spatial Commerce Platform</title>
+    <title>VPO FOR BUSINESSES | The Spatial Commerce Platform</title>
 
     <!-- Fonts: Full VPO editorial stack -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,7 +59,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Canvas root — sits above DSM strip & cursor glow but is transparent */
+        /* Canvas root — sits above VPO strip & cursor glow but is transparent */
         #root {
             position: absolute; inset: 0;
             width: 100vw; height: 100vh;
@@ -89,7 +89,7 @@
             mix-blend-mode: screen;
         }
 
-        /* ─── DSM TITLE STRIP — pure floating text, no box, no border ──────── */
+        /* ─── VPO TITLE STRIP — pure floating text, no box, no border ──────── */
         #dsm-title-strip {
             position: fixed;
             top: 50%;
@@ -418,22 +418,22 @@
     <!-- Ambient cursor glow (behind canvas, shows through transparency) -->
     <div id="cursor-glow" aria-hidden="true"></div>
 
-    <!-- DSM FOR BUSINESSES — horizontal moving title strip (behind canvas) -->
+    <!-- VPO FOR BUSINESSES — horizontal moving title strip (behind canvas) -->
     <div id="dsm-title-strip" aria-hidden="true">
         <div class="dsm-strip-track">
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
             <!-- Exact duplicate for seamless loop -->
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
-            <span class="dsm-strip-item">DSM FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
+            <span class="dsm-strip-item">VPO FOR BUSINESSES</span><span class="dsm-strip-sep">·</span>
         </div>
     </div>
 
@@ -470,7 +470,7 @@
         <span class="scroll-hint-text">Scroll to explore</span>
     </div>
 
-    <!-- 3D canvas (transparent — DSM strip & cursor glow show through) -->
+    <!-- 3D canvas (transparent — VPO strip & cursor glow show through) -->
     <div id="root"></div>
     <!-- Editorial overlays -->
     <div id="vpo-editorial-root" aria-live="polite"></div>
@@ -536,54 +536,54 @@
         const FRAMES = [
             {
                 id: 1,
-                title: "Beyond the Grid.",
-                subtitle: "01 / PARADIGM SHIFT",
-                copy: "Flat commerce is a compromise. VPO elevates your brand beyond static product pages into immersive, high-fidelity 3D outlet worlds. Transform the act of buying into a memorable spatial experience.",
+                title: "Stores with texture.",
+                subtitle: "01 / REAL CLIENT SIGNALS",
+                copy: "Kelvin Haus, Zuhd, and Optica already sell through strong visual worlds: sustainable streetwear, heritage-led modest fashion, and precise eyewear. VPO turns that existing content into rooms customers can enter.",
                 align: 'right',
                 imgX: -2.2, imgY: .1, imgZ: -4,
                 scale: [3, 4.5],
-                url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=1600&auto=format&fit=crop"
+                url: "https://kelvinhaus.com/cdn/shop/files/519A0217.jpg?v=1763374584&width=2450"
             },
             {
                 id: 2,
-                title: "Free-Roam Discovery.",
-                subtitle: "02 / SPATIAL COMMERCE",
-                copy: "Grant your customers agency to freely navigate curated architectural environments tailored to your brand's heritage. Discovery becomes intuitive, physical, and deeply engaging.",
+                title: "Heritage needs space.",
+                subtitle: "02 / MODEST FASHION DISTRICT",
+                copy: "Zuhd's collections move between keffiyehs, thobes, prayer mats, accessories, and Palestine-led giving. A spatial storefront lets those stories sit beside the products instead of getting buried below the fold.",
                 align: 'left',
                 imgX: 2.2, imgY: -.3, imgZ: -12,
                 scale: [3, 4.5],
-                url: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop"
+                url: "https://cdn.shopify.com/s/files/1/0726/9616/8768/files/56UYxsqQ.jpg?v=1717933757"
             },
             {
                 id: 3,
-                title: "Shared Presence.",
-                subtitle: "03 / MULTIPLAYER SHOPPING",
-                copy: "Luxury is an experience best shared. Enable global clientele to invite friends, join exclusive private lobbies, and explore your latest collections together in real-time.",
+                title: "Fit before checkout.",
+                subtitle: "03 / EYEWEAR TRY-ON",
+                copy: "Optica sells by shape, lens, brand, and use case. In VPO, aviator, rimless, round, rectangular, and designer frames become an interactive fitting wall built for comparison.",
                 align: 'right',
                 imgX: -2.0, imgY: .5, imgZ: -20,
                 scale: [3.5, 2.5],
-                url: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600&auto=format&fit=crop"
+                url: "https://shopoptica.com/wp-content/uploads/2025/07/optica-banner-2025.webp"
             },
             {
                 id: 4,
-                title: "Digital Flagships.",
-                subtitle: "04 / BRANDED WORLDS",
-                copy: "Construct atmospheres that defy physical limitations. From gravity-defying runway spaces to serene minimalist pavilions, forge a differentiated digital presence commanding premium positioning.",
+                title: "Drops become events.",
+                subtitle: "04 / LAUNCH ROOMS",
+                copy: "New arrivals, seasonal capsules, and limited collections get a dedicated digital room with product hotspots, short-form campaign footage, guided browsing, and live social shopping.",
                 align: 'left',
                 imgX: 2.5, imgY: -.2, imgZ: -28,
                 scale: [3, 4.5],
-                url: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1600&auto=format&fit=crop"
+                url: "https://kelvinhaus.com/cdn/shop/files/hero_banner_1daa7322-00a4-41ab-acdd-01094114c8bf.png?v=1773479571&width=1440"
             },
             {
                 id: 5,
-                title: "Build the world your brand deserves.",
+                title: "Build the store customers remember.",
                 subtitle: "05 / ENTER VPO",
-                copy: "Enter the next era of luxury retail — spatial, social, and unmistakably premium. Limited partners. Curated districts. Designed for legacy brands.",
+                copy: "Use the assets your brands already have. VPO waits for real pages to load, captures clean references, and converts client identity into a 3D shopping experience.",
                 align: 'center',
                 finale: true,
                 imgX: 0, imgY: 0, imgZ: -34,
                 scale: [7.2, 4.6],
-                url: "https://images.unsplash.com/photo-1558442074-3c19857bc1dc?q=80&w=2000&auto=format&fit=crop"
+                url: "https://cdn.shopify.com/s/files/1/0726/9616/8768/files/DSC07425-Edit.jpg?v=1728308074"
             }
         ];
 
@@ -672,8 +672,8 @@
 
         /* ── Hero 3D title removed — CSS strip at z-50 handles the title ── */
 
-        /* ── DSM strip: fade out strip as scroll begins, slightly speed up ─ */
-        function DSMStripCoupler() {
+        /* ── VPO strip: fade out strip as scroll begins, slightly speed up ─ */
+        function VPOStripCoupler() {
             const scroll = useScroll();
             useFrame(() => {
                 const strip = document.getElementById('dsm-title-strip');
@@ -958,7 +958,7 @@
                 <Canvas
                     gl={{ antialias: true, alpha: true, toneMapping: THREE.ACESFilmicToneMapping }}
                     onCreated={({ gl }) => {
-                        /* Transparent clear — DSM strip (z-5) and cursor glow (z-9) show through */
+                        /* Transparent clear — VPO strip (z-5) and cursor glow (z-9) show through */
                         gl.setClearColor(0x080705, 0);
                     }}
                     camera={{ position: [0, 0, 4], fov: 45 }}
@@ -980,7 +980,7 @@
                     <Suspense fallback={null}>
                         <ScrollControls pages={TOTAL_PAGES} damping={.14} distance={1.25}>
                             <SceneRig />
-                            <DSMStripCoupler />
+                            <VPOStripCoupler />
                             <ScrollTimelinePub />
                             <group>
                                 {FRAMES.map((frame) => (
@@ -1474,6 +1474,67 @@
 }
 .bp-future-card:hover .bp-scan-line { opacity: 1; }
 
+/* ── CLIENT REFERENCES ───────────────────────────────────────────────── */
+.bp-client-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 54px;
+}
+@media (max-width: 900px) { .bp-client-grid { grid-template-columns: 1fr; } }
+.bp-client-card {
+    min-height: 520px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: #0b0a08;
+    overflow: hidden;
+}
+.bp-client-media {
+    height: 310px;
+    background: #111;
+    overflow: hidden;
+}
+.bp-client-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(.88) contrast(1.04);
+}
+.bp-client-body {
+    padding: 26px;
+}
+.bp-client-name {
+    font-family: var(--serif);
+    font-size: clamp(1.7rem, 3vw, 2.4rem);
+    font-weight: 300;
+    letter-spacing: -.03em;
+    color: var(--fg);
+}
+.bp-client-type {
+    margin: 10px 0 16px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(235,233,228,.34);
+}
+.bp-client-copy {
+    font-family: var(--sans);
+    font-size: 12px;
+    line-height: 1.7;
+    color: rgba(235,233,228,.48);
+}
+.bp-client-link {
+    display: inline-block;
+    margin-top: 22px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: rgba(235,233,228,.72);
+    text-decoration: none;
+}
+.bp-client-link:hover { color: var(--fg); }
+
 /* ── §7 JOIN ─────────────────────────────────────────────────────────── */
 #bp-join {
     background: #040302;
@@ -1571,6 +1632,50 @@
 }
 .bp-nav-cta:hover { opacity: .85; }
 
+@media (max-width: 760px) {
+    #bp-nav {
+        height: auto;
+        min-height: 76px;
+        padding: 10px 16px 0;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "brand cta"
+            "links links";
+        row-gap: 10px;
+        align-items: center;
+    }
+    .bp-nav-brand {
+        grid-area: brand;
+        font-size: 21px;
+    }
+    .bp-nav-cta {
+        grid-area: cta;
+        padding: 8px 12px;
+        font-size: 8px;
+        letter-spacing: .16em;
+        white-space: nowrap;
+    }
+    .bp-nav-links {
+        grid-area: links;
+        display: flex;
+        gap: 18px;
+        max-width: calc(100vw - 32px);
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 0 10px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    .bp-nav-links::-webkit-scrollbar { display: none; }
+    .bp-nav-link {
+        flex: 0 0 auto;
+        font-size: 8px;
+        letter-spacing: .18em;
+        white-space: nowrap;
+    }
+}
+
 /* Reveal animation for sections */
 .bp-reveal {
     opacity: 0; transform: translateY(28px);
@@ -1587,6 +1692,7 @@
         <a class="bp-nav-brand" href="/" onclick="(window.top||window).location.href='/'; return false;" title="Back to VPO">VPO.</a>
         <div class="bp-nav-links">
             <button class="bp-nav-link" onclick="document.getElementById('bp-process').scrollIntoView({behavior:'smooth'})">Process</button>
+            <button class="bp-nav-link" onclick="document.getElementById('bp-clients').scrollIntoView({behavior:'smooth'})">Clients</button>
             <button class="bp-nav-link" onclick="document.getElementById('bp-tiers').scrollIntoView({behavior:'smooth'})">Tiers</button>
             <button class="bp-nav-link" onclick="document.getElementById('bp-outcomes').scrollIntoView({behavior:'smooth'})">Outcomes</button>
             <button class="bp-nav-link" onclick="document.getElementById('bp-future').scrollIntoView({behavior:'smooth'})">Coming Soon</button>
@@ -1601,8 +1707,8 @@
                 ← Return to Experience
             </button>
             <p class="bp-kicker">The VPO Partner Program</p>
-            <h1 class="bp-intro-headline">Design a world<br><em>worth entering.</em></h1>
-            <p class="bp-intro-sub">VPO gives luxury brands the architecture to transcend flat e-commerce — immersive 3D flagship worlds, virtual try-on, live social shopping. Choose the tier that matches your ambition.</p>
+            <h1 class="bp-intro-headline">Turn client content<br><em>into worlds.</em></h1>
+            <p class="bp-intro-sub">VPO gives fashion, fragrance, eyewear, and lifestyle brands a spatial storefront built from their actual product language: clean campaign visuals, high-quality screenshots, 3D product displays, virtual try-on, and live social shopping.</p>
             <div class="bp-paths">
                 <div class="bp-path gold" onclick="document.getElementById('bp-tiers').scrollIntoView({behavior:'smooth'})">✦ Gold Partner — from $1,999/mo</div>
                 <div class="bp-path plat" onclick="document.getElementById('bp-tiers').scrollIntoView({behavior:'smooth'})">✦ Platinum Partner — from $5,999/mo</div>
@@ -1620,19 +1726,67 @@
             <div class="bp-steps">
                 <div class="bp-step bp-reveal step-active">
                     <div class="bp-step-num">01</div>
-                    <h3 class="bp-step-title">Apply &amp; Consult</h3>
-                    <p class="bp-step-desc">Submit your brand profile. Our spatial commerce team reviews fit, ambition, and aligns on your vision. A dedicated architect is assigned within 48 hours.</p>
+                    <h3 class="bp-step-title">Capture &amp; Clean</h3>
+                    <p class="bp-step-desc">We collect public storefront copy, campaign visuals, and product assets after the page has fully loaded, avoiding loaders, skeleton screens, and half-rendered layouts.</p>
                 </div>
                 <div class="bp-step bp-reveal">
                     <div class="bp-step-num">02</div>
-                    <h3 class="bp-step-title">Design &amp; Build</h3>
-                    <p class="bp-step-desc">Our architects design your 3D world — custom or template — with your brand DNA embedded in every surface. Platinum partners receive a full 6-week white-glove build cycle.</p>
+                    <h3 class="bp-step-title">Map Brand DNA</h3>
+                    <p class="bp-step-desc">We translate the brand's real categories, colors, product lines, and customer promise into a spatial plan: rooms, shelves, hotspots, try-on zones, and launch moments.</p>
                 </div>
                 <div class="bp-step bp-reveal">
                     <div class="bp-step-num">03</div>
-                    <h3 class="bp-step-title">Launch &amp; Scale</h3>
-                    <p class="bp-step-desc">Go live inside VPO's curated district network. Access analytics, live sessions, virtual events, and growth consulting built into your partnership from day one.</p>
+                    <h3 class="bp-step-title">Publish the World</h3>
+                    <p class="bp-step-desc">The finished experience goes live as a branded 3D store with commerce links, analytics, multiplayer sessions, and campaign-ready landing copy.</p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="bp-divider">
+
+    <!-- §3 CLIENT REFERENCES -->
+    <section id="bp-clients" class="bp-section">
+        <div class="bp-container">
+            <div class="bp-reveal">
+                <span class="bp-kicker">02 — Client References</span>
+                <h2 class="bp-h2">Real brands.<br>Usable source material.</h2>
+                <p class="bp-lead">Public storefronts already carry the ingredients VPO needs: product photography, value props, categories, campaign drops, and service promises.</p>
+            </div>
+            <div class="bp-client-grid">
+                <article class="bp-client-card bp-reveal">
+                    <div class="bp-client-media">
+                        <img src="https://kelvinhaus.com/cdn/shop/files/519A0634.jpg?v=1763372948&width=2260" alt="Kelvin Haus campaign reference">
+                    </div>
+                    <div class="bp-client-body">
+                        <h3 class="bp-client-name">Kelvin Haus</h3>
+                        <p class="bp-client-type">Sustainable UAE streetwear</p>
+                        <p class="bp-client-copy">Public copy centers on eco-conscious fashion, UAE-made apparel, recycled materials, NFC/NFT technology, and giving through each order. Ideal VPO treatment: a materials-led flagship with sustainability story points beside each collection.</p>
+                        <a class="bp-client-link" href="https://kelvinhaus.com" target="_blank" rel="noreferrer">Open case study →</a>
+                    </div>
+                </article>
+                <article class="bp-client-card bp-reveal">
+                    <div class="bp-client-media">
+                        <img src="https://cdn.shopify.com/s/files/1/0726/9616/8768/files/DSC07408.jpg?v=1728478980" alt="Zuhd collection reference">
+                    </div>
+                    <div class="bp-client-body">
+                        <h3 class="bp-client-name">Zuhd</h3>
+                        <p class="bp-client-type">Heritage modest fashion</p>
+                        <p class="bp-client-copy">Zuhd's public storefront emphasizes hand tailoring, Australian design, worldwide shipping, Palestine-linked giving, keffiyehs, thobes, accessories, prayer mats, and community impact. VPO can turn the catalog into heritage rooms and drop-led collection spaces.</p>
+                        <a class="bp-client-link" href="https://zuhd.store" target="_blank" rel="noreferrer">Open case study →</a>
+                    </div>
+                </article>
+                <article class="bp-client-card bp-reveal">
+                    <div class="bp-client-media">
+                        <img src="https://shopoptica.com/wp-content/uploads/2026/04/k041-2.webp" alt="Optica eyewear reference">
+                    </div>
+                    <div class="bp-client-body">
+                        <h3 class="bp-client-name">Optica</h3>
+                        <p class="bp-client-type">Eyewear and eye care</p>
+                        <p class="bp-client-copy">Optica leads with eye care since 1986, designer eyewear, product search by frame shape, sunglasses, prescription frames, contact lenses, and accessories. VPO can prioritize virtual mirror try-on, comparison walls, and shape-guided discovery.</p>
+                        <a class="bp-client-link" href="https://shopoptica.com" target="_blank" rel="noreferrer">Open case study →</a>
+                    </div>
+                </article>
             </div>
         </div>
     </section>
@@ -1643,7 +1797,7 @@
     <section id="bp-tiers" class="bp-section">
         <div class="bp-container">
             <div class="bp-reveal">
-                <span class="bp-kicker">02 — Partnership Tiers</span>
+                <span class="bp-kicker">03 — Partnership Tiers</span>
                 <h2 class="bp-h2">Choose your world.</h2>
                 <p class="bp-lead">Two tiers. One purpose: elevating your brand above the static. Select the level of immersion your brand deserves.</p>
             </div>
@@ -1708,7 +1862,7 @@
     <section id="bp-features" class="bp-section">
         <div class="bp-container">
             <div class="bp-reveal">
-                <span class="bp-kicker">03 — Feature Comparison</span>
+                <span class="bp-kicker">04 — Feature Comparison</span>
                 <h2 class="bp-h2">What's included.</h2>
             </div>
             <table class="bp-feat-table bp-reveal">
@@ -1762,9 +1916,9 @@
     <section id="bp-outcomes" class="bp-section">
         <div class="bp-container">
             <div class="bp-outcomes-intro bp-reveal">
-                <span class="bp-kicker">04 — Business Impact</span>
+                <span class="bp-kicker">05 — Business Impact</span>
                 <h2 class="bp-h2">What changes<br>when commerce<br><em>becomes spatial.</em></h2>
-                <p class="bp-lead">Across our early partners, immersive spatial commerce consistently outperforms flat e-commerce on every meaningful metric.</p>
+                <p class="bp-lead">The pitch is simple: fewer dead product pages, more guided discovery, stronger brand recall, and visual references customers can understand before they buy.</p>
             </div>
 
             <!-- Metrics grid -->
@@ -1850,7 +2004,7 @@
     <section id="bp-future" class="bp-section">
         <div class="bp-container">
             <div class="bp-reveal">
-                <span class="bp-kicker">05 — The Frontier</span>
+                <span class="bp-kicker">06 — The Frontier</span>
                 <h2 class="bp-h2">What's coming<br>next.</h2>
                 <p class="bp-lead">VPO's roadmap is built at the edge of what commerce and technology can do. Platinum partners receive early access to every feature below.</p>
             </div>
@@ -1858,28 +2012,28 @@
             <div class="bp-future-grid">
                 <div class="bp-future-card bp-reveal">
                     <div class="bp-scan-line"></div>
-                    <span class="bp-future-timeline">Q2 2025</span>
+                    <span class="bp-future-timeline">Available now</span>
                     <span class="bp-future-icon">◈</span>
                     <h4 class="bp-future-name">Spatial Audio Commerce</h4>
                     <p class="bp-future-desc">Each zone of your store plays a branded soundscape — materials, mood, and collection season expressed through generative audio. The world sounds like your brand.</p>
                 </div>
                 <div class="bp-future-card bp-reveal">
                     <div class="bp-scan-line"></div>
-                    <span class="bp-future-timeline">Q3 2025</span>
+                    <span class="bp-future-timeline">Available now</span>
                     <span class="bp-future-icon">✦</span>
                     <h4 class="bp-future-name">Neural Preference Mapping</h4>
                     <p class="bp-future-desc">AI that learns each customer's style DNA from session behaviour — no forms, no surveys. The store quietly reorders itself around what they love before they know they love it.</p>
                 </div>
                 <div class="bp-future-card bp-reveal">
                     <div class="bp-scan-line"></div>
-                    <span class="bp-future-timeline">Q4 2025</span>
+                    <span class="bp-future-timeline">Pilot 2026</span>
                     <span class="bp-future-icon">◎</span>
                     <h4 class="bp-future-name">Haptic Fabric Simulation</h4>
                     <p class="bp-future-desc">On compatible devices, customers feel the weight, weave, and drape of fabrics as they inspect garments — silk, wool, denim — through precision actuator patterns.</p>
                 </div>
                 <div class="bp-future-card bp-reveal">
                     <div class="bp-scan-line"></div>
-                    <span class="bp-future-timeline">Q1 2026</span>
+                    <span class="bp-future-timeline">Pilot 2026</span>
                     <span class="bp-future-icon">⬡</span>
                     <h4 class="bp-future-name">Biometric Ambience</h4>
                     <p class="bp-future-desc">Using device camera signals, VPO subtly reads customer engagement state and adapts the environment — lighting warmth, pace of animation, even music tempo — in real time.</p>
@@ -1906,7 +2060,7 @@
     <section id="bp-join" class="bp-section">
         <div class="bp-container">
             <div class="bp-join-inner bp-reveal">
-                <span class="bp-kicker">06 — Apply</span>
+                <span class="bp-kicker">07 — Apply</span>
                 <h2 class="bp-h2">Join the<br><em>Vanguard.</em></h2>
                 <p class="bp-lead" style="margin:0 auto 8px;">Access is limited to curated partner brands. Secure your place.</p>
                 <form class="bp-join-form" onsubmit="return false;">

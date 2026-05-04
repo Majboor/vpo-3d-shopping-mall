@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 import ScrollReveal from "@/components/ScrollReveal";
 
 const AccessSection = () => {
@@ -24,7 +25,7 @@ const AccessSection = () => {
                 <span className="italic">Membership.</span>
               </h2>
               <p className="text-base md:text-lg text-foreground/50 font-sans leading-relaxed mb-10 max-w-lg">
-                Unlock early access to drops, private viewing rooms, and persistent identity across the metaverse. Your wallet is your passport.
+                Unlock early access to drops, private viewing rooms, and persistent identity across the metaverse. Tell us what kind of store experience you want to build.
               </p>
 
               {/* Benefits List */}
@@ -132,14 +133,17 @@ const AccessSection = () => {
                 </div>
               </div>
 
-              {/* Access Vault Button */}
+              {/* Contact CTA */}
               <div className="mt-8 text-center">
                 <p className="text-xs text-foreground/30 font-sans mb-3">
                   Already a member?
                 </p>
-                <button className="px-8 py-3 bg-foreground text-background text-sm tracking-[0.15em] uppercase font-sans hover:bg-foreground/90 transition-colors">
-                  Access Vault
-                </button>
+                <Link
+                  to="/business#bp-join"
+                  className="inline-block px-8 py-3 bg-foreground text-background text-sm tracking-[0.15em] uppercase font-sans hover:bg-foreground/90 transition-colors"
+                >
+                  Contact Us
+                </Link>
               </div>
             </div>
           </ScrollReveal>

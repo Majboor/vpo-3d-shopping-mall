@@ -1,4 +1,5 @@
 import { ArrowRight, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 import ScrollReveal from "@/components/ScrollReveal";
 
 const DistrictsSection = () => {
@@ -71,10 +72,13 @@ const DistrictsSection = () => {
               </div>
             </div>
 
-            <button className="w-full flex justify-between items-center px-6 py-4 bg-[#1a1918] text-white hover:bg-stone-800 transition-colors">
-              <span className="text-[10px] uppercase tracking-widest">Teleport to District</span>
+            <Link
+              to="/business#bp-join"
+              className="w-full flex justify-between items-center px-6 py-4 bg-[#1a1918] text-white hover:bg-stone-800 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest">Contact Us</span>
               <MapPin className="w-4 h-4" />
-            </button>
+            </Link>
           </ScrollReveal>
 
           {/* The Map Visual (Abstract Nodes) */}

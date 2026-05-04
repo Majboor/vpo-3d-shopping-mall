@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ShoppingBag } from "lucide-react";
+import { Link } from "react-router-dom";
 import ScrollReveal from "@/components/ScrollReveal";
 import LobbyModal from "./LobbyModal";
 
@@ -76,9 +77,13 @@ const RunwaySection = () => {
                     Designed by Maison VPO
                   </p>
                 </div>
-                <button className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-colors backdrop-blur-md">
+                <Link
+                  to="/business#bp-join"
+                  aria-label="Contact us about this look"
+                  className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-colors backdrop-blur-md"
+                >
                   <ShoppingBag className="w-4 h-4" />
-                </button>
+                </Link>
               </div>
             </div>
           </ScrollReveal>
@@ -129,6 +134,12 @@ const RunwaySection = () => {
               >
                 Create Lobby
               </button>
+              <Link
+                to="/business#bp-join"
+                className="mt-3 block w-full py-2 text-center border border-white/10 text-[9px] uppercase tracking-widest text-stone-400 hover:text-white hover:border-white/30 transition-colors"
+              >
+                Contact Us
+              </Link>
             </div>
           </ScrollReveal>
         </div>

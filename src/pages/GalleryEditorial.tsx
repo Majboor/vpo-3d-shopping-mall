@@ -36,9 +36,12 @@ const GalleryEditorial = () => {
             </a>
           </div>
 
-          <button className="font-sans text-[11px] tracking-[0.2em] text-[hsl(30_10%_18%)] uppercase px-6 py-3 border border-[hsl(30_8%_70%)] hover:bg-[hsl(30_8%_90%)] hover:border-[hsl(30_8%_50%)] transition-all duration-300">
-            Connect Wallet
-          </button>
+          <Link
+            to="/business#bp-join"
+            className="font-sans text-[11px] tracking-[0.2em] text-[hsl(30_10%_18%)] uppercase px-6 py-3 border border-[hsl(30_8%_70%)] hover:bg-[hsl(30_8%_90%)] hover:border-[hsl(30_8%_50%)] transition-all duration-300"
+          >
+            Contact Us
+          </Link>
         </div>
       </nav>
 
@@ -147,9 +150,9 @@ const GalleryEditorial = () => {
             <a href="#" className="font-sans text-[10px] tracking-[0.25em] text-[hsl(30_6%_50%)] uppercase hover:text-[hsl(30_8%_30%)] transition-colors">
               Terms
             </a>
-            <a href="#" className="font-sans text-[10px] tracking-[0.25em] text-[hsl(30_6%_50%)] uppercase hover:text-[hsl(30_8%_30%)] transition-colors">
+            <Link to="/business#bp-join" className="font-sans text-[10px] tracking-[0.25em] text-[hsl(30_6%_50%)] uppercase hover:text-[hsl(30_8%_30%)] transition-colors">
               Contact
-            </a>
+            </Link>
           </div>
           <p className="font-sans text-[10px] tracking-[0.2em] text-[hsl(30_6%_55%)] uppercase">
             © 2024 Virtual Premium Outlets

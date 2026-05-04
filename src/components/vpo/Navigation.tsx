@@ -5,9 +5,10 @@ const Navigation = () => {
     { label: "Runway", href: "#runway", isRoute: false },
     { label: "Spaces", href: "#spaces", isRoute: false },
     { label: "Editorial", href: "/gallery", isRoute: true },
-    { label: "Journal", href: "#journal", isRoute: false },
+    { label: "Journal", href: "/blog", isRoute: true },
     { label: "Access", href: "#account", isRoute: false },
-    { label: "DSM For Businesses", href: "/vpo-business", isRoute: true },
+    { label: "Business", href: "/business", isRoute: true },
+    { label: "Case Studies", href: "/case-studies", isRoute: true },
   ];
 
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -29,7 +30,7 @@ const Navigation = () => {
         </div>
 
         {/* Central Menu */}
-        <div className="hidden md:flex flex-1 justify-center gap-8 lg:gap-12">
+        <div className="hidden md:flex flex-1 justify-center gap-5 lg:gap-8">
           {navItems.map((item) => (
             item.isRoute ? (
               <Link
@@ -57,9 +58,12 @@ const Navigation = () => {
           <span className="hidden lg:block text-[10px] text-stone-400 uppercase tracking-widest">
             v.0.9 Beta
           </span>
-          <button className="px-4 py-1.5 border border-white/20 text-[9px] uppercase tracking-widest hover:bg-white hover:text-black hover:border-white transition-all duration-300">
-            Connect Wallet
-          </button>
+          <Link
+            to="/business#bp-join"
+            className="px-4 py-1.5 border border-white/20 text-[9px] uppercase tracking-widest hover:bg-white hover:text-black hover:border-white transition-all duration-300"
+          >
+            Contact Us
+          </Link>
         </div>
       </div>
     </nav>

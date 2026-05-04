@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import ScrollReveal from "@/components/ScrollReveal";
 
 const ManifestoSection = () => {
@@ -37,15 +38,24 @@ const ManifestoSection = () => {
             </p>
           </ScrollReveal>
           <ScrollReveal delay={0.4} direction="right">
-            <a
-              href="#"
-              className="inline-flex items-center gap-3 mt-12 text-sm font-sans tracking-wide text-foreground group"
-            >
-              <span className="border-b border-foreground/50 pb-1 group-hover:border-foreground transition-colors">
-                READ THE JOURNAL
-              </span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </a>
+            <div className="mt-12 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+              <a
+                href="#journal"
+                className="inline-flex items-center gap-3 text-sm font-sans tracking-wide text-foreground group"
+              >
+                <span className="border-b border-foreground/50 pb-1 group-hover:border-foreground transition-colors">
+                  READ THE JOURNAL
+                </span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </a>
+              <Link
+                to="/business"
+                className="inline-flex items-center gap-3 border border-foreground/25 px-5 py-3 text-[10px] uppercase tracking-[0.22em] text-foreground transition-colors hover:bg-foreground hover:text-background"
+              >
+                For Businesses
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </ScrollReveal>
         </div>
       </div>
