@@ -7,6 +7,7 @@ import FrameSequence from "@/components/FrameSequence";
 import FrameSequenceScene2 from "@/components/FrameSequenceScene2";
 import TopTicker from "@/components/vpo/TopTicker";
 import Navigation from "@/components/vpo/Navigation";
+import ScrollProgress from "@/components/vpo/ScrollProgress";
 import ManifestoSection from "@/components/vpo/ManifestoSection";
 import SpacesSection from "@/components/vpo/SpacesSection";
 import CurrentSelectionSection from "@/components/vpo/CurrentSelectionSection";
@@ -65,8 +66,9 @@ const Index = () => {
   }, [navigate]);
 
   return (
-    <main className="bg-background overflow-hidden">
+    <main id="main-content" tabIndex={-1} className="bg-background overflow-hidden">
       <TopTicker />
+      <ScrollProgress />
       <Navigation />
       <FrameSequence />
       <ManifestoSection />
