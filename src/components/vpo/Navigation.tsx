@@ -9,6 +9,7 @@ const Navigation = () => {
     { label: "Runway", href: "#runway", isRoute: false },
     { label: "Spaces", href: "#spaces", isRoute: false },
     { label: "Editorial", href: "/gallery", isRoute: true },
+    { label: "Atelier", href: "/atelier", isRoute: true },
     { label: "Journal", href: "/blog", isRoute: true },
     { label: "Access", href: "#account", isRoute: false },
     { label: "Business", href: "/business", isRoute: true },
@@ -49,7 +50,7 @@ const Navigation = () => {
               <Link
                 key={item.label}
                 to={item.href}
-                className="text-[10px] uppercase tracking-[0.2em] font-medium hover:text-stone-400 transition-colors"
+                className="vpo-navlink text-[10px] uppercase tracking-[0.2em] font-medium transition-colors"
               >
                 {item.label}
               </Link>
@@ -58,7 +59,7 @@ const Navigation = () => {
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleSmoothScroll(e, item.href)}
-                className="text-[10px] uppercase tracking-[0.2em] font-medium hover:text-stone-400 transition-colors"
+                className="vpo-navlink text-[10px] uppercase tracking-[0.2em] font-medium transition-colors"
               >
                 {item.label}
               </a>
@@ -93,7 +94,7 @@ const Navigation = () => {
 
       {/* Mobile drawer */}
       <div
-        style={{ backgroundColor: "#050505", top: 0, left: 0, right: 0, bottom: 0, height: "100vh", width: "100vw", overflowY: "auto" }}
+        style={{ backgroundColor: "#050505", top: 0, left: 0, right: 0, bottom: 0, height: "100dvh", overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}
         className={`md:hidden fixed z-[100] transition-opacity duration-300 ${
           mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
