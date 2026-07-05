@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import vpoHeroBg from "@/assets/vpo-hero-bg.jpeg";
-import vpoHeroBgMobile from "@/assets/vpo-hero-bg-mobile.png";
+import vpoHeroBgMobile from "@/assets/vpo-hero-bg-mobile.jpeg";
 import VersionSelector from "./VersionSelector";
+import VersionSelectorB from "./VersionSelectorB";
+import { useHeroVariant } from "@/hooks/useHeroVariant";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -30,6 +33,18 @@ const FrameSequence = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('select');
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0]);
   const frameIndexRef = useRef({ value: 0 });
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const heroVariant = useHeroVariant();
+
+  // Honour the OS "reduce motion" setting: skip the version selector and the
+  // scroll-driven 226-frame cinematic (a vestibular trigger and a heavy
+  // network cost) by defaulting straight to the calm, static "lite" hero.
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setViewMode('lite');
+      setIsLoading(false);
+    }
+  }, [prefersReducedMotion]);
 
   // Rotate loading messages
   useEffect(() => {
@@ -216,9 +231,11 @@ const FrameSequence = () => {
 
   const loadingProgress = Math.round((loadedCount / TOTAL_FRAMES) * 100);
 
-  // Show version selector
+  // Show version selector — A/B landing experiment toggled via ?variant=b
   if (viewMode === 'select') {
-    return <VersionSelector onSelect={handleVersionSelect} />;
+    return heroVariant === 'b'
+      ? <VersionSelectorB onSelect={handleVersionSelect} />
+      : <VersionSelector onSelect={handleVersionSelect} />;
   }
 
   // Lite mode - skip directly to hero section
@@ -249,7 +266,12 @@ const FrameSequence = () => {
         className="relative h-screen w-full overflow-hidden bg-background"
       >
         {isLoading ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-background">
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-background"
+            role="status"
+            aria-live="polite"
+            aria-label="Loading immersive experience"
+          >
             <div className="grain-overlay" />
             
             {/* Spinning loader */}
@@ -286,6 +308,8 @@ const FrameSequence = () => {
         ) : (
           <canvas
             ref={canvasRef}
+            role="img"
+            aria-label="Cinematic walkthrough of a virtual premium outlet, animating as you scroll"
             className="absolute inset-0 h-full w-full"
           />
         )}
