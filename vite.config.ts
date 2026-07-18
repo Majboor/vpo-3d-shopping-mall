@@ -14,4 +14,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rollupOptions: {
+      output: {
+        // Split heavy vendors into their own chunks so the initial bundle
+        // stays lean and the 3D/animation code loads on its own schedule.
+        manualChunks: {
+          three: ["three", "@react-three/fiber", "@react-three/drei"],
+          gsap: ["gsap"],
+          react: ["react", "react-dom", "react-router-dom"],
+        },
+      },
+    },
+  },
 });
